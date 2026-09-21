@@ -1,0 +1,1503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Eco Aware — Staff dashboard</title>
+<style>
+/* ===== design tokens (shared with the rest of Eco Aware) ===== */
+:root {
+  --primary-green: #1e8449;
+  --primary-green-dark: #166638;
+  --primary-green-light: #e8f5ec;
+
+  --background: #f4f6f5;
+  --card-background: #ffffff;
+  --text-primary: #1a2b22;
+  --text-secondary: #6b7a72;
+  --border: #e3e8e5;
+
+  --success: #1e8449;
+  --success-bg: #e8f5ec;
+  --warning: #b7791f;
+  --warning-bg: #fdf3dc;
+  --info: #2563eb;
+  --info-bg: #e8f0fe;
+  --danger: #c0392b;
+  --danger-bg: #fbe7e5;
+
+  --cat-water: #2563eb;
+  --cat-water-bg: #e8f0fe;
+  --cat-waste: #c0392b;
+  --cat-waste-bg: #fbe7e5;
+  --cat-energy: #b7791f;
+  --cat-energy-bg: #fdf3dc;
+  --cat-general: #1e8449;
+  --cat-general-bg: #e8f5ec;
+  --cat-safety: #7c3aed;
+  --cat-safety-bg: #f1e9fe;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 3px rgba(16, 24, 20, 0.06), 0 1px 2px rgba(16, 24, 20, 0.04);
+
+  /* Staff admin console */
+  --sidebar-bg: #123527;
+  --sidebar-bg-active: #1c4a36;
+  --sidebar-text: #cfe3d6;
+  --sidebar-text-dim: #8fae9c;
+  --sidebar-width: 248px;
+  --topbar-height: 64px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--background);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+
+/* ---------- shell ---------- */
+.app-shell { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 20px 18px;
+}
+.brand-mark {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--primary-green);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; flex-shrink: 0;
+}
+.brand-text .brand-name { font-weight: 700; font-size: 15px; color: #fff; line-height: 1.2; }
+.brand-text .brand-sub { font-size: 11.5px; color: var(--sidebar-text-dim); }
+
+.sidebar-section-label {
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  color: var(--sidebar-text-dim);
+  padding: 10px 20px 6px;
+  font-weight: 600;
+}
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--sidebar-text);
+  position: relative;
+}
+.nav-item svg { width: 17px; height: 17px; flex-shrink: 0; opacity: .85; }
+.nav-item:hover { background: rgba(255,255,255,0.06); }
+.nav-item.active { background: var(--sidebar-bg-active); color: #fff; }
+.nav-item.active svg { opacity: 1; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--primary-green);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.avatar-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #eef7ee;
+  color: var(--primary-green-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12.5px; font-weight: 700;
+  flex-shrink: 0;
+}
+.sidebar-footer .who-name { font-size: 12.5px; font-weight: 600; color: #fff; line-height: 1.3; }
+.sidebar-footer .who-role { font-size: 10.5px; color: var(--sidebar-text-dim); line-height: 1.3; }
+
+.main-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.topbar {
+  height: var(--topbar-height);
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 28px;
+  background: var(--card-background);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 5;
+}
+.topbar-breadcrumb { font-size: 13px; color: var(--text-secondary); }
+.topbar-breadcrumb b { color: var(--text-primary); font-weight: 600; }
+.topbar-search {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  width: 260px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.topbar-search svg { width: 15px; height: 15px; flex-shrink: 0; }
+.topbar-search input { border: none; background: none; outline: none; font: inherit; color: inherit; width: 100%; }
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); background: #fff; color: var(--text-secondary);
+}
+.icon-btn svg { width: 16px; height: 16px; }
+.topbar-user { display: flex; align-items: center; gap: 9px; padding-left: 4px; }
+.topbar-user .who-name { font-size: 13px; font-weight: 600; }
+.topbar-user .who-role { font-size: 11px; color: var(--text-secondary); }
+.topbar-user svg { width: 14px; height: 14px; color: var(--text-secondary); }
+
+.page-content { padding: 26px 28px 60px; max-width: 1180px; }
+
+/* ---------- generic components ---------- */
+.card {
+  background: var(--card-background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+.page-eyebrow { font-size: 12.5px; color: var(--primary-green); font-weight: 600; margin: 0 0 6px; }
+.page-title { font-size: 24px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.01em; }
+.page-desc { font-size: 13.5px; color: var(--text-secondary); margin: 0; }
+.page-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600;
+  padding: 9px 16px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn svg { width: 15px; height: 15px; }
+.btn-primary { background: var(--primary-green); color: #fff; }
+.btn-primary:hover { background: var(--primary-green-dark); }
+.btn-outline { background: #fff; border-color: var(--border); color: var(--text-primary); }
+.btn-sm { padding: 6px 13px; font-size: 12.5px; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+.stat-card { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.stat-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.stat-label { font-size: 12.5px; color: var(--text-secondary); font-weight: 500; }
+.stat-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.stat-icon svg { width: 15px; height: 15px; }
+.stat-value { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.stat-foot { font-size: 12px; color: var(--text-secondary); }
+
+.section-card { padding: 20px 22px; margin-bottom: 18px; }
+.section-head-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; gap: 14px; }
+.section-title { font-size: 15.5px; font-weight: 700; margin: 0 0 3px; }
+.section-sub { font-size: 12.5px; color: var(--text-secondary); margin: 0; }
+.section-actions { display: flex; align-items: center; gap: 12px; }
+.link-arrow { font-size: 12.5px; font-weight: 600; color: var(--primary-green); }
+.dropdown-chip {
+  display: flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 6px 11px; font-size: 12.5px; color: var(--text-primary); background: #fff;
+}
+.dropdown-chip svg { width: 12px; height: 12px; color: var(--text-secondary); }
+
+.filters-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-box {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 12px; background: #fff; color: var(--text-secondary); font-size: 13px;
+  flex: 1; min-width: 200px;
+}
+.search-box svg { width: 14px; height: 14px; }
+.search-box input { border: none; outline: none; background: none; font: inherit; color: var(--text-primary); width: 100%; }
+
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left; font-size: 10.5px; letter-spacing: .04em;
+  color: var(--text-secondary); font-weight: 600;
+  padding: 0 12px 10px; border-bottom: 1px solid var(--border);
+}
+tbody td { padding: 13px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+.cell-primary { font-weight: 600; font-size: 13.5px; }
+.cell-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.report-cell { display: flex; align-items: flex-start; gap: 10px; }
+.cat-icon {
+  width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.cat-icon svg { width: 15px; height: 15px; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 700; letter-spacing: .02em;
+}
+.badge-critical { color: #b91c1c; background: #fde3e0; }
+.badge-high { color: #b45309; background: #fde7c7; }
+.badge-medium { color: #b7791f; background: var(--warning-bg); }
+.badge-low { color: var(--success); background: var(--success-bg); }
+.status-dot { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-secondary); }
+.status-dot::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.status-unassigned { color: #9aa39d; }
+.status-assigned { color: var(--warning); }
+.status-in-review { color: var(--info); }
+.status-in-progress { color: var(--info); }
+.status-not-started { color: #9aa39d; }
+.status-overdue { color: var(--danger); }
+.status-resolved { color: var(--success); }
+
+.pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+.pagination-info { font-size: 12.5px; color: var(--text-secondary); }
+.pagination-btns { display: flex; gap: 8px; }
+
+.tabs-row { display: flex; gap: 6px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+.tab-item {
+  padding: 10px 4px; margin-right: 22px;
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  border-bottom: 2px solid transparent; cursor: pointer;
+}
+.tab-item.active { color: var(--primary-green); border-bottom-color: var(--primary-green); }
+
+.stars { color: #f0b429; font-size: 13px; letter-spacing: 1px; }
+.stars .dim { color: #e3e8e5; }
+
+.team-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.team-card { padding: 18px; }
+.team-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.team-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--primary-green-light); color: var(--primary-green-dark); display:flex;align-items:center;justify-content:center; font-weight:700; }
+.team-menu { color: var(--text-secondary); font-weight: 700; letter-spacing: 1px; }
+.team-field { display: flex; justify-content: space-between; font-size: 12.5px; padding: 5px 0; border-bottom: 1px dashed var(--border); }
+.team-field:last-of-type { border-bottom: none; }
+.team-field .k { color: var(--text-secondary); }
+.team-field .v { font-weight: 600; }
+.duty-dot { display: inline-flex; align-items: center; gap: 5px; }
+.duty-dot::before { content:''; width:7px; height:7px; border-radius:50%; background: currentColor; }
+.duty-available { color: var(--success); }
+.duty-busy { color: var(--warning); }
+.duty-away { color: #9aa39d; }
+.team-card-footer { margin-top: 12px; }
+
+.view { display: none; }
+.view.active { display: block; }
+
+@media (max-width: 980px) {
+  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ===================================================================
+   Portal additions (Stage 4): forms, badges, detail pages, toasts...
+   =================================================================== */
+.sidebar-footer .who { min-width: 0; flex: 1; }
+.sidebar-footer .who-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-signout {
+  background: none; border: 1px solid rgba(255,255,255,0.2); color: var(--sidebar-text);
+  border-radius: var(--radius-sm); font-size: 11.5px; padding: 5px 9px; flex-shrink: 0;
+}
+.sidebar-signout:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.nav-badge[hidden] { display: none; }
+
+/* state + category badges (values come straight from the API) */
+.badge { white-space: nowrap; }
+.badge-new { color: #b91c1c; background: #fde3e0; }
+.badge-assigned { color: var(--warning); background: var(--warning-bg); }
+.badge-in_progress { color: var(--info); background: var(--info-bg); }
+.badge-pending_review { color: #6d28d9; background: #f1e9fe; }
+.badge-resolved { color: var(--success); background: var(--success-bg); }
+.badge-cat-water { color: var(--cat-water); background: var(--cat-water-bg); }
+.badge-cat-waste { color: var(--cat-waste); background: var(--cat-waste-bg); }
+.badge-cat-energy { color: var(--cat-energy); background: var(--cat-energy-bg); }
+.badge-cat-safety { color: var(--cat-safety); background: var(--cat-safety-bg); }
+.badge-cat-other { color: var(--cat-general); background: var(--cat-general-bg); }
+.badge-muted { color: var(--text-secondary); background: var(--background); }
+
+/* forms */
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field-label { font-size: 10.5px; letter-spacing: .05em; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
+.input {
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; width: 100%;
+  font: inherit; font-size: 13px; background: #fff; color: var(--text-primary);
+}
+.input:focus { outline: 2px solid var(--primary-green-light); border-color: var(--primary-green); }
+textarea.input { resize: vertical; min-height: 84px; line-height: 1.5; }
+.input-inline { width: auto; padding: 8px 11px; }
+.field-error { color: var(--danger); font-size: 12px; min-height: 0; }
+.field-error:empty { display: none; }
+.hint { font-size: 12px; color: var(--text-secondary); }
+.check { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-primary); }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.btn-block { width: 100%; justify-content: center; }
+.btn-danger-outline { background: #fff; border-color: #efc4bf; color: var(--danger); }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+button { font-family: inherit; cursor: pointer; }
+
+/* banners, toast, loading */
+.banner { border-radius: var(--radius-sm); padding: 11px 14px; font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
+.banner-info { background: var(--info-bg); color: #1d4ed8; }
+.banner-warn { background: var(--warning-bg); color: #8a5a12; }
+.banner-ok { background: var(--success-bg); color: var(--success); }
+.banner-err { background: var(--danger-bg); color: var(--danger); }
+.banner b { font-weight: 700; }
+.toast-wrap { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
+.toast { background: #123527; color: #fff; padding: 11px 16px; border-radius: var(--radius-sm); font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.22); max-width: 380px; }
+.toast.err { background: #a52a1f; }
+.loading { padding: 44px; text-align: center; color: var(--text-secondary); font-size: 13.5px; }
+.empty { padding: 36px 16px; text-align: center; color: var(--text-secondary); font-size: 13.5px; }
+
+/* tables */
+tbody tr.row-link:hover { background: #f8faf9; }
+.desc-cell { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nowrap { white-space: nowrap; }
+.text-danger { color: var(--danger); font-weight: 600; }
+.text-muted { color: var(--text-secondary); }
+.right { text-align: right; }
+a.inline-link { color: var(--primary-green); font-weight: 600; }
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 6px; }
+.table-scroll { overflow-x: auto; }
+.tab-item .tab-count { font-size: 11px; background: var(--background); color: var(--text-secondary); border-radius: var(--radius-pill); padding: 1px 7px; margin-left: 6px; }
+.tab-item.active .tab-count { background: var(--primary-green-light); color: var(--primary-green-dark); }
+
+/* detail pages (report, assign, review, history, task) */
+.detail-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.detail-card { padding: 20px 22px; }
+.detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.detail-title { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+.detail-meta { font-size: 12.5px; color: var(--text-secondary); margin: 0 0 10px; }
+.detail-body-text { font-size: 13.5px; color: var(--text-primary); line-height: 1.6; margin: 12px 0 8px; white-space: pre-wrap; word-break: break-word; }
+.side-panel { padding: 20px; }
+.side-panel h3 { font-size: 14px; margin: 0 0 14px; }
+.photo-label { font-size: 10.5px; letter-spacing: .05em; font-weight: 700; color: var(--text-secondary); margin: 16px 0 8px; text-transform: uppercase; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.photo-grid a { display: block; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); aspect-ratio: 16/10; background: var(--background); }
+.photo-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.no-photo { font-size: 12.5px; color: var(--text-secondary); }
+.file-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.file-previews img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+.note-card { padding: 16px 20px; margin-top: 16px; }
+.note-label { font-size: 10.5px; letter-spacing: .05em; color: var(--text-secondary); font-weight: 700; margin: 0 0 8px; text-transform: uppercase; }
+.note-text { font-size: 13.5px; line-height: 1.55; margin: 0 0 10px; white-space: pre-wrap; word-break: break-word; }
+.note-foot { font-size: 12px; color: var(--text-secondary); }
+.kv { display: grid; grid-template-columns: 1fr; gap: 0; }
+.kv-row { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+.kv-row:last-child { border-bottom: none; }
+.kv-row .k { color: var(--text-secondary); }
+.kv-row .v { font-weight: 600; text-align: right; word-break: break-word; }
+.evidence-chip { display: block; border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+.evidence-ok { border: 1.5px solid var(--primary-green); background: var(--primary-green-light); color: var(--primary-green-dark); }
+.evidence-no { border: 1.5px solid #e6c98a; background: var(--warning-bg); color: #8a5a12; }
+
+.status-banner { background: var(--success-bg); color: var(--success); border-radius: var(--radius-sm); padding: 12px 16px; font-weight: 700; font-size: 13.5px; margin-bottom: 18px; }
+.status-banner .sb-label { display: block; font-size: 10.5px; letter-spacing: .05em; font-weight: 700; opacity: .8; margin-bottom: 3px; text-transform: uppercase; }
+.timeline { position: relative; padding-left: 6px; }
+.timeline-item { display: flex; gap: 14px; padding-bottom: 22px; position: relative; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before { content: ''; position: absolute; left: 5px; top: 16px; bottom: -6px; width: 1px; background: var(--border); }
+.timeline-item:last-child::before { display: none; }
+.timeline-dot { width: 11px; height: 11px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; z-index: 1; }
+.timeline-dot.filled { background: var(--primary-green); }
+.timeline-dot.hollow { background: #fff; border: 2px solid var(--primary-green); }
+.timeline-label { font-size: 13.5px; font-weight: 700; }
+.timeline-time { font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 4px; }
+.timeline-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; word-break: break-word; }
+.big-figure { font-size: 20px; font-weight: 700; color: var(--primary-green-dark); }
+
+/* dashboard bits */
+.two-col { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.cat-bar-card { padding: 20px; }
+.cat-bar-title { font-size: 14px; font-weight: 700; margin: 0 0 16px; }
+.cat-bar-row { margin-bottom: 14px; }
+.cat-bar-row:last-child { margin-bottom: 0; }
+.cat-bar-label { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px; }
+.cat-bar-track { height: 7px; border-radius: var(--radius-pill); background: var(--background); overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: var(--radius-pill); background: var(--primary-green); }
+.monitor-grid { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.mini-stats .card { padding: 14px 16px; }
+.mini-stats .card.wide { grid-column: 1 / -1; }
+.side-stat-value { font-size: 22px; font-weight: 700; }
+.side-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.team-workload-card { padding: 18px; }
+.team-workload-title { font-size: 13.5px; font-weight: 700; margin: 0 0 2px; }
+.team-workload-sub { font-size: 11.5px; color: var(--text-secondary); margin: 0 0 12px; }
+.tw-row { padding: 10px 0; border-top: 1px solid var(--border); }
+.tw-row:first-of-type { border-top: none; }
+.tw-name { font-size: 13px; font-weight: 600; }
+.tw-count { font-size: 12px; color: var(--text-secondary); }
+.tw-link { font-size: 11.5px; font-weight: 600; color: var(--primary-green); }
+
+@media (max-width: 1000px) {
+  .two-col, .detail-grid, .monitor-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 860px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { position: static; width: 100%; height: auto; }
+  .sidebar-nav { flex-direction: row; flex-wrap: wrap; }
+  .topbar-search { display: none; }
+  .page-content { padding: 20px 16px 50px; }
+}
+
+@media (max-width: 560px) {
+  .team-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13V8a1 1 0 0 1 1-1h6a7 7 0 0 1 7 7 1 1 0 0 1-1 1h-1a7 7 0 0 1-6-3.5"/><path d="M8 15c0-4 2-6 6-8"/></svg></div>
+      <div class="brand-text"><div class="brand-name">EcoAware</div><div class="brand-sub">Staff operations</div></div>
+    </div>
+    <div class="sidebar-section-label">WORKSPACE</div>
+    <nav class="sidebar-nav">
+      <a href="#/dashboard" class="nav-item" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+      <a href="#/incoming" class="nav-item" data-nav="incoming"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>Incoming reports<span class="nav-badge" id="badge-incoming" hidden>0</span></a>
+      <a href="#/assignments" class="nav-item" data-nav="assignments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>Assignments</a>
+      <a href="#/resolved" class="nav-item" data-nav="resolved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.2 2.2 4.8-4.9"/></svg>Resolved</a>
+      <a href="#/team" class="nav-item" data-nav="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Team</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="avatar-circle" id="sidebar-avatar">--</div>
+      <div class="who"><div class="who-name" id="sidebar-name">--</div><div class="who-role">Facilities Staff</div></div>
+      <button class="sidebar-signout" id="signout-btn" type="button">Sign out</button>
+    </div>
+  </aside>
+  <div class="main-col">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">Eco Aware / <b id="crumb-label">Staff dashboard</b></div>
+      <div class="topbar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="topbar-search-input" type="text" placeholder="Search reports… (press Enter)" />
+      </div>
+    </div>
+    <main class="page-content" id="content"><div class="loading">Loading…</div></main>
+  </div>
+</div>
+<script src="shared/config.js"></script>
+<script>
+/* ===== js/auth.js ===== */
+// ============================================================================
+// AUTH SERVICE
+//
+// Talks to the real backend (POST /api/auth/*). This file is the ONLY place
+// that knows how auth works — every page calls the `Auth` object below, which
+// wraps apiFetch() and stores the returned JWT (see AUTH_STORAGE) so later
+// requests can send it as a Bearer token.
+//
+// The backend is the actual authority: it re-checks the token and the user's
+// role server-side on every request (see Backend/src/middleware/auth.js).
+// ============================================================================
+
+const AUTH_STORAGE = {
+  users: 'ea_users',           // no longer used client-side — accounts live in the backend now
+  session: 'ea_session',       // who is signed in (localStorage) — now includes a real JWT token
+  pending: 'ea_pending_signup' // sign-up awaiting email verification (sessionStorage)
+};
+
+// Where each role lands after a successful sign-in.
+const ROLE_HOME = {
+  reporter: 'index.html',
+  management: 'dashboard.html',
+  staff: 'staff.html',
+};
+
+// API_BASE, CATEGORY_TO_API and API_TO_CATEGORY come from shared/config.js
+// (loaded before this script — see that file to change the backend's address).
+
+const AuthStore = {
+  read(storage, key, fallback) {
+    try {
+      const raw = storage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  },
+  write(storage, key, value) {
+    try {
+      storage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+  remove(storage, key) {
+    try {
+      storage.removeItem(key);
+    } catch (e) {
+      /* storage unavailable — nothing to remove */
+    }
+  },
+};
+
+/**
+ * Thin fetch wrapper: sends JSON, attaches the bearer token from the current
+ * session (unless auth:false), and throws an Error with a readable .message
+ * on any non-2xx response. err.status / err.data carry the raw response.
+ */
+async function apiFetch(path, { method = 'GET', body, auth = true } = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth) {
+    const session = AuthStore.read(localStorage, AUTH_STORAGE.session, null);
+    if (session && session.token) headers.Authorization = `Bearer ${session.token}`;
+  }
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch (e) {
+    throw new Error(`Could not reach the server at ${API_BASE}. Is the backend running?`);
+  }
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch (e) {
+    /* empty or non-JSON body */
+  }
+
+  if (!res.ok) {
+    if (res.status === 401 && auth) {
+      // Token missing/expired/invalid — drop the stale session.
+      AuthStore.remove(localStorage, AUTH_STORAGE.session);
+    }
+    const message = (data && (data.message || data.error)) || `Request failed (${res.status})`;
+    const err = new Error(message);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+
+  return data;
+}
+
+// ---- public API --------------------------------------------------------------
+
+const Auth = {
+  ROLE_HOME,
+
+  getSession() {
+    return AuthStore.read(localStorage, AUTH_STORAGE.session, null);
+  },
+
+  // Call at the very top of any app-page script (before DOMContentLoaded), the
+  // same way home.js does. Sends signed-out visitors to Select Your Role and
+  // returns false so the caller can bail out before touching the DOM.
+  requireSession() {
+    if (this.getSession()) return true;
+    location.replace('role.html');
+    return false;
+  },
+
+  logout() {
+    AuthStore.remove(localStorage, AUTH_STORAGE.session);
+  },
+
+  _startSession(role, name, id, token) {
+    const session = { role, name, id, token, at: Date.now() };
+    AuthStore.write(localStorage, AUTH_STORAGE.session, session);
+    return session;
+  },
+
+  /**
+   * Step 1 of reporter sign-up. Calls POST /auth/signup. On success the
+   * backend has emailed a 6-digit code (or, in local dev with no SMTP set up,
+   * returns it directly as devCode so you can still test the flow).
+   * @returns {Promise<{ok:true, pending:object} | {ok:false, field?:string, error:string}>}
+   */
+  async startSignUp({ email, username, phone, password }) {
+    try {
+      const data = await apiFetch('/auth/signup', {
+        method: 'POST',
+        auth: false,
+        body: { email, username, phone, password },
+      });
+      const pending = {
+        email: (data.email || email).trim().toLowerCase(),
+        username: username.trim(),
+        referenceCode: data.reference || '',
+        devCode: data.devCode || null,
+      };
+      AuthStore.write(sessionStorage, AUTH_STORAGE.pending, pending);
+      return { ok: true, pending };
+    } catch (e) {
+      const errors = e.data && e.data.errors;
+      const field = errors ? Object.keys(errors)[0] : undefined;
+      return { ok: false, field, error: (field && errors[field]) || e.message };
+    }
+  },
+
+  getPending() {
+    return AuthStore.read(sessionStorage, AUTH_STORAGE.pending, null);
+  },
+
+  /** Issues a fresh code via POST /auth/resend-code. */
+  async resendCode() {
+    const pending = this.getPending();
+    if (!pending) return null;
+    try {
+      const data = await apiFetch('/auth/resend-code', {
+        method: 'POST',
+        auth: false,
+        body: { email: pending.email },
+      });
+      pending.devCode = data.devCode || null;
+      pending.referenceCode = data.reference || pending.referenceCode;
+      AuthStore.write(sessionStorage, AUTH_STORAGE.pending, pending);
+      return pending;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  /**
+   * Step 2 of reporter sign-up. Calls POST /auth/verify-email. On success the
+   * account is verified and the backend signs the reporter in immediately.
+   * @returns {Promise<{ok:true, session:object} | {ok:false, reason?:string, error:string}>}
+   */
+  async verifyCode(input) {
+    const pending = this.getPending();
+    if (!pending) {
+      return { ok: false, reason: 'no-pending', error: 'Your sign-up session has expired. Please start again.' };
+    }
+    try {
+      const data = await apiFetch('/auth/verify-email', {
+        method: 'POST',
+        auth: false,
+        body: { email: pending.email, code: input },
+      });
+      AuthStore.remove(sessionStorage, AUTH_STORAGE.pending);
+      return { ok: true, session: this._startSession(data.user.role, data.user.username, data.user.email, data.token) };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  },
+
+  /**
+   * @param {'reporter'|'management'|'staff'} role
+   * @param {string} identifier - email (reporter/management) or staff ID / email (staff)
+   * @returns {Promise<{ok:true, session:object} | {ok:false, error:string, requiresVerification?:boolean}>}
+   */
+  async login(role, identifier, password) {
+    try {
+      const data = await apiFetch('/auth/login', {
+        method: 'POST',
+        auth: false,
+        body: { identifier, password, portal: role },
+      });
+      return { ok: true, session: this._startSession(data.user.role, data.user.username, data.user.email, data.token) };
+    } catch (e) {
+      if (e.data && e.data.requiresVerification) {
+        AuthStore.write(sessionStorage, AUTH_STORAGE.pending, {
+          email: e.data.email,
+          username: '',
+          referenceCode: '',
+        });
+        return { ok: false, error: e.message, requiresVerification: true };
+      }
+      return { ok: false, error: e.message || 'Incorrect email or password. Please try again.' };
+    }
+  },
+};
+</script>
+<script>
+/* ===== js/portal-kit.js  (shared by the Management and Staff portals) ===== */
+// Everything here talks to the real backend (API_BASE + apiFetch come from the Auth script above).
+// All text that comes from the server is escaped with esc() before it is put into the page.
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const enc = encodeURIComponent;
+
+function esc(value) {
+  return String(value === undefined || value === null ? '' : value).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+/* ---------------- formatting ---------------- */
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// "2026-09-22" -> "Sep 22"  (plain date strings are NOT run through Date, so no timezone shift)
+function fmtDay(iso) {
+  if (!iso) return '—';
+  const [, m, d] = String(iso).slice(0, 10).split('-').map(Number);
+  return m ? `${MONTHS[m - 1]} ${d}` : '—';
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return isNaN(d) ? '—' : `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return '—';
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+}
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const secs = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+  if (isNaN(secs)) return '—';
+  if (secs < 60) return 'just now';
+  if (secs < 3600) return `${Math.floor(secs / 60)} min ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)} hr ago`;
+  if (secs < 86400 * 7) return `${Math.floor(secs / 86400)} day${secs >= 86400 * 2 ? 's' : ''} ago`;
+  return fmtDate(iso);
+}
+function fmtMinutes(m) {
+  if (m === null || m === undefined) return '—';
+  if (m < 60) return `${m} min`;
+  if (m < 1440) return `${Math.round((m / 60) * 10) / 10} hrs`;
+  return `${Math.floor(m / 1440)}d ${Math.round((m % 1440) / 60)}h`;
+}
+function todayLocalISO(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function truncate(s, n) {
+  s = String(s || '');
+  return s.length > n ? s.slice(0, n - 1) + '…' : s;
+}
+
+/* ---------------- badges ---------------- */
+
+const STATE_TEXT = { new: 'New', assigned: 'Assigned', in_progress: 'In progress', pending_review: 'Pending review', resolved: 'Resolved' };
+function stateBadge(state, label) {
+  return `<span class="badge badge-${esc(state)}">${esc(label || STATE_TEXT[state] || state)}</span>`;
+}
+function priorityBadge(p) {
+  return `<span class="badge badge-${esc(String(p || '').toLowerCase())}">${esc(String(p || '').toUpperCase())}</span>`;
+}
+function catBadge(c) {
+  const key = { Water: 'water', Waste: 'waste', Energy: 'energy', Safety: 'safety' }[c] || 'other';
+  return `<span class="badge badge-cat-${key}">${esc(c)}</span>`;
+}
+
+const CATEGORY_OPTIONS = [['', 'All categories'], ['Waste', 'Waste'], ['Water', 'Water'], ['Energy', 'Energy'], ['Safety', 'Safety'], ['Other', 'Other']];
+const PRIORITY_LIST = ['Low', 'Medium', 'High', 'Critical'];
+const DEFAULT_DUE_DAYS = { Critical: 1, High: 2, Medium: 5, Low: 7 };
+
+/* ---------------- API (JSON or multipart) ---------------- */
+
+async function api(path, { method = 'GET', body, form, query } = {}) {
+  const session = Auth.getSession();
+  const headers = {};
+  if (session && session.token) headers.Authorization = `Bearer ${session.token}`;
+
+  let payload;
+  if (form) {
+    payload = form; // the browser sets the multipart boundary itself
+  } else if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    payload = JSON.stringify(body);
+  }
+  let qs = '';
+  if (query) {
+    const p = new URLSearchParams();
+    Object.entries(query).forEach(([k, v]) => { if (v !== '' && v !== null && v !== undefined && v !== false) p.set(k, v); });
+    const s = p.toString();
+    qs = s ? `?${s}` : '';
+  }
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}${qs}`, { method, headers, body: payload });
+  } catch (e) {
+    throw new Error(`Could not reach the server at ${API_BASE}. Is the backend running?`);
+  }
+  let data = null;
+  try { data = await res.json(); } catch (e) { /* empty body */ }
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      Auth.logout();
+      location.replace('role.html');
+    }
+    const err = new Error((data && (data.message || data.error)) || `Request failed (${res.status})`);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+/* ---------------- small UI helpers ---------------- */
+
+function toast(message, type) {
+  let wrap = $('#toast-wrap');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = 'toast-wrap';
+    wrap.className = 'toast-wrap';
+    document.body.appendChild(wrap);
+  }
+  const t = document.createElement('div');
+  t.className = 'toast' + (type === 'err' ? ' err' : '');
+  t.textContent = message;
+  wrap.appendChild(t);
+  setTimeout(() => t.remove(), type === 'err' ? 6000 : 3500);
+}
+
+function errorHtml(e, retryId) {
+  const msg = e && e.status === 403 ? "You don't have permission to see this." : (e && e.message) || 'Something went wrong.';
+  return `<div class="banner banner-err"><b>Could not load this page.</b> ${esc(msg)}${retryId ? ` <button class="btn btn-outline btn-sm" id="${retryId}" style="margin-left:8px;">Try again</button>` : ''}</div>`;
+}
+
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+function csvDownload(filename, rows) {
+  const line = (r) => r.map((c) => {
+    const s = String(c === null || c === undefined ? '' : c);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }).join(',');
+  const blob = new Blob([rows.map(line).join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+/* ---------------- filter bars ----------------
+   defs: [{ id, kind: 'search'|'select'|'date'|'check', param, placeholder, title, options:[[value,label]], value, label }]
+*/
+function filterBar(defs) {
+  const html = defs.map((d) => {
+    if (d.kind === 'search') {
+      return `<div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="${d.id}" placeholder="${esc(d.placeholder || 'Search…')}" value="${esc(d.value || '')}"></div>`;
+    }
+    if (d.kind === 'select') {
+      return `<select class="input input-inline" id="${d.id}" aria-label="${esc(d.title || d.param)}">${d.options.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(d.value || '') ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+    }
+    if (d.kind === 'date') {
+      return `<label class="check text-muted">${esc(d.title)} <input type="date" class="input input-inline" id="${d.id}" value="${esc(d.value || '')}"></label>`;
+    }
+    if (d.kind === 'check') {
+      return `<label class="check"><input type="checkbox" id="${d.id}"${d.value ? ' checked' : ''}> ${esc(d.label)}</label>`;
+    }
+    return '';
+  }).join('');
+  return `<div class="filters-row">${html}</div>`;
+}
+function readFilters(defs) {
+  const out = {};
+  defs.forEach((d) => {
+    const el = document.getElementById(d.id);
+    if (!el) return;
+    out[d.param] = d.kind === 'check' ? (el.checked ? 'true' : '') : el.value.trim();
+  });
+  return out;
+}
+function bindFilters(defs, onChange) {
+  const slow = debounce(onChange, 300);
+  defs.forEach((d) => {
+    const el = document.getElementById(d.id);
+    if (!el) return;
+    el.addEventListener(d.kind === 'search' ? 'input' : 'change', d.kind === 'search' ? slow : onChange);
+  });
+}
+
+function pagerHtml(p, noun = 'reports') {
+  if (!p) return '';
+  const from = p.total ? (p.page - 1) * p.limit + 1 : 0;
+  const to = Math.min(p.page * p.limit, p.total);
+  return `<div class="pagination"><span class="pagination-info">${p.total ? `Showing ${from}–${to} of ${p.total} ${noun}` : `No ${noun}`}</span>
+    <div class="pagination-btns">
+      <button class="btn btn-outline btn-sm" data-page="${p.page - 1}"${p.page <= 1 ? ' disabled' : ''}>Previous</button>
+      <button class="btn btn-outline btn-sm" data-page="${p.page + 1}"${p.page >= p.totalPages ? ' disabled' : ''}>Next</button>
+    </div></div>`;
+}
+function bindPager(root, onPage) {
+  $$('[data-page]', root).forEach((b) => b.addEventListener('click', () => { if (!b.disabled) onPage(Number(b.dataset.page)); }));
+}
+
+/* ---------------- report blocks (used on several pages) ---------------- */
+
+function photosBlock(label, list) {
+  const items = (list || []).map((p) => `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="${esc(label)}" loading="lazy"></a>`).join('');
+  return `<div class="photo-label">${esc(label)}</div>` + (items ? `<div class="photo-grid">${items}</div>` : '<div class="no-photo">No photos.</div>');
+}
+
+function mapLink(d) {
+  if (d.latitude === null || d.latitude === undefined || d.longitude === null || d.longitude === undefined) return '';
+  return ` · <a class="inline-link" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=${esc(d.latitude)}&mlon=${esc(d.longitude)}#map=18/${esc(d.latitude)}/${esc(d.longitude)}">View on map</a>`;
+}
+
+// The main card of a report: title, badges, description, photos.
+function reportCard(d) {
+  return `<div class="card detail-card">
+    <div class="detail-head">
+      <div>
+        <h2 class="detail-title">${esc(d.title)}</h2>
+        <p class="detail-meta">#${esc(d.reportCode)} · Reported ${esc(fmtDateTime(d.createdAt))}${d.location ? ' · ' + esc(d.location) : ''}${mapLink(d)}</p>
+      </div>
+      <div>${stateBadge(d.workflowState, d.stateLabel)}</div>
+    </div>
+    <div class="chip-row">${catBadge(d.category)} ${priorityBadge(d.priority)}</div>
+    <p class="detail-body-text">${esc(d.description)}</p>
+    ${photosBlock('Reported photos', d.photos && d.photos.reported)}
+    ${d.photos && d.photos.after && d.photos.after.length ? photosBlock('Completion photos', d.photos.after) : ''}
+  </div>`;
+}
+
+function technicianCard(d) {
+  if (!d.technicianUpdate) return '';
+  const t = d.technicianUpdate;
+  return `<div class="card note-card">
+    <p class="note-label">Technician update</p>
+    <p class="note-text">${esc(t.note)}</p>
+    <div class="note-foot">Submitted by ${esc(t.submittedBy || t.team || 'the response team')}${t.team && t.submittedBy ? ' (' + esc(t.team) + ')' : ''} · ${esc(fmtDateTime(t.submittedAt))}</div>
+  </div>`;
+}
+
+// Key/value info box: who reported it, who owns it, when it is due.
+function infoCard(d) {
+  const rows = [
+    ['Reported by', d.reporter ? d.reporter.username : '—'],
+    ['Department', d.department ? d.department.name : 'Not assigned yet'],
+    ['Assigned to', d.assignedTo ? d.assignedTo.username : '—'],
+    ['Priority', d.priority],
+    ['Due date', d.estimatedCompletion ? fmtDay(d.estimatedCompletion) : '—'],
+  ];
+  return `<div class="card side-panel"><h3>Report details</h3><div class="kv">${rows.map(([k, v]) => `<div class="kv-row"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join('')}</div></div>`;
+}
+
+// events: [{ step, note, at, by }]  (by = username string or { username })
+function timelineHtml(events, { newestFirst = false } = {}) {
+  if (!events || !events.length) return '<div class="empty">No events yet.</div>';
+  const list = newestFirst ? events : events.slice().reverse();
+  return `<div class="timeline">${list.map((e, i) => {
+    const who = e.by && (e.by.username || (typeof e.by === 'string' ? e.by : ''));
+    return `<div class="timeline-item"><span class="timeline-dot ${i === 0 ? 'filled' : 'hollow'}"></span><div>
+      <div class="timeline-label">${esc(e.step)}</div>
+      <div class="timeline-time">${esc(fmtDateTime(e.at))}${who ? ' · ' + esc(who) : ''}</div>
+      ${e.note ? `<div class="timeline-desc">${esc(e.note)}</div>` : ''}
+    </div></div>`;
+  }).join('')}</div>`;
+}
+
+function showFieldErrors(err) {
+  $$('.field-error').forEach((el) => { el.textContent = ''; });
+  const errors = err && err.data && err.data.errors;
+  if (!errors) return false;
+  let any = false;
+  Object.entries(errors).forEach(([k, msg]) => {
+    const el = document.getElementById(`err-${k}`);
+    if (el) { el.textContent = msg; any = true; }
+  });
+  return any;
+}
+
+// A red error under a field disappears as soon as the user edits that field.
+['input', 'change'].forEach((evt) => document.addEventListener(evt, (e) => {
+  const field = e.target.closest && e.target.closest('.field');
+  const msg = field && field.querySelector('.field-error');
+  if (msg) msg.textContent = '';
+}));
+
+/* ---------------- the portal shell: routing, sidebar, sign-out ---------------- */
+
+const Portal = (() => {
+  const routes = [];
+  let navId = 0;
+  let cfg = {};
+
+  const content = () => document.getElementById('content');
+
+  function on(pattern, nav, handler) {
+    const keys = [];
+    const re = new RegExp('^' + pattern.replace(/:([a-zA-Z]+)/g, (_, k) => { keys.push(k); return '([^/]+)'; }) + '$');
+    routes.push({ re, keys, nav, handler });
+  }
+
+  function parseHash() {
+    const raw = location.hash.replace(/^#/, '') || '/';
+    const i = raw.indexOf('?');
+    const path = i === -1 ? raw : raw.slice(0, i);
+    const query = {};
+    new URLSearchParams(i === -1 ? '' : raw.slice(i + 1)).forEach((v, k) => { query[k] = v; });
+    return { path, query };
+  }
+
+  function crumb(label) {
+    const el = document.getElementById('crumb-label');
+    if (el) el.textContent = label;
+    document.title = `Eco Aware — ${label}`;
+  }
+
+  function setBadge(id, n) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = n;
+    el.hidden = !n;
+  }
+
+  async function dispatch() {
+    const { path, query } = parseHash();
+    const mine = ++navId;
+    const ctx = {
+      query,
+      params: {},
+      alive: () => mine === navId,
+      render: (html) => { if (mine === navId) content().innerHTML = html; },
+    };
+    for (const r of routes) {
+      const m = r.re.exec(path);
+      if (!m) continue;
+      r.keys.forEach((k, i) => { ctx.params[k] = decodeURIComponent(m[i + 1]); });
+      $$('.nav-item').forEach((n) => n.classList.toggle('active', n.dataset.nav === r.nav));
+      window.scrollTo(0, 0);
+      content().innerHTML = '<div class="loading">Loading…</div>';
+      try {
+        await r.handler(ctx);
+      } catch (e) {
+        if (!ctx.alive()) return;
+        content().innerHTML = errorHtml(e, 'retry-btn');
+        const b = document.getElementById('retry-btn');
+        if (b) b.addEventListener('click', dispatch);
+      }
+      return;
+    }
+    location.hash = cfg.home;
+  }
+
+  // Returns false if the visitor must be sent elsewhere.
+  function boot(config) {
+    cfg = config;
+    if (!Auth.requireSession()) return false;
+    const session = Auth.getSession();
+    if (session.role !== cfg.role) {
+      location.replace(Auth.ROLE_HOME[session.role] || 'role.html');
+      return false;
+    }
+    const name = session.name || cfg.role;
+    $('#sidebar-name').textContent = name;
+    $('#sidebar-avatar').textContent = name.slice(0, 2).toUpperCase();
+    $('#signout-btn').addEventListener('click', () => { Auth.logout(); location.replace('role.html'); });
+
+    const search = $('#topbar-search-input');
+    if (search) {
+      search.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && search.value.trim()) location.hash = `${cfg.searchRoute}?search=${enc(search.value.trim())}`;
+      });
+    }
+    window.addEventListener('hashchange', dispatch);
+    if (!location.hash || location.hash === '#') location.hash = cfg.home;
+    else dispatch();
+    return true;
+  }
+
+  return { on, boot, crumb, setBadge, refresh: () => dispatch() };
+})();
+</script>
+<script>
+/* ===== js/staff.js  (Staff portal: /api/staff/*) ===== */
+
+let ME = null; // { id, username } of the signed-in staff member, loaded once
+
+function pageHead(title, desc, actions, eyebrow) {
+  return `<div class="page-head-row"><div>${eyebrow ? `<p class="page-eyebrow">${esc(eyebrow)}</p>` : ''}<h1 class="page-title">${esc(title)}</h1><p class="page-desc">${esc(desc)}</p></div>${actions ? `<div>${actions}</div>` : ''}</div>`;
+}
+
+async function refreshIncomingBadge() {
+  try {
+    const data = await api('/staff/reports/incoming', { query: { limit: 1 } });
+    Portal.setBadge('badge-incoming', data.pagination.total);
+  } catch (e) { /* optional */ }
+}
+
+function ownerCell(r) {
+  if (r.assignedTo) return `<span class="status-dot status-assigned">Assigned · ${esc(r.assignedTo.username)}</span>`;
+  if (r.department) return `<span class="status-dot status-assigned">Assigned · ${esc(r.department.name)}</span>`;
+  return '<span class="status-dot status-unassigned">Unassigned</span>';
+}
+
+function taskStatusCell(t) {
+  const cls = { 'Not started': 'not-started', 'In progress': 'in-progress', Overdue: 'overdue', 'Awaiting review': 'in-review', Resolved: 'resolved' }[t.taskStatus] || 'in-progress';
+  return `<span class="status-dot status-${cls}">${esc(t.taskStatus)}</span>`;
+}
+
+function emptyCard(text) { return `<div class="card"><div class="empty">${esc(text)}</div></div>`; }
+
+/* ---- tables ---- */
+function incomingTable(reports, empty) {
+  if (!reports.length) return emptyCard(empty || 'No incoming reports right now.');
+  return `<div class="card table-scroll" style="padding:6px 8px;"><table>
+    <thead><tr><th>REPORT ID</th><th>CATEGORY</th><th>DESCRIPTION</th><th>LOCATION</th><th>REPORTED BY</th><th>RECEIVED</th><th>PRIORITY</th><th class="right">ACTION</th></tr></thead>
+    <tbody>${reports.map((r) => `<tr class="row-link">
+      <td class="nowrap"><a class="inline-link" href="#/report/${enc(r.reportCode)}">#${esc(r.reportCode)}</a></td>
+      <td>${catBadge(r.category)}</td>
+      <td class="desc-cell" title="${esc(r.description)}">${esc(truncate(r.description, 60))}</td>
+      <td>${esc(r.location || '—')}</td>
+      <td>${esc(r.reportedBy.username)}<div class="cell-sub">${esc(r.reportedBy.role)}</div></td>
+      <td class="nowrap">${esc(timeAgo(r.createdAt))}</td>
+      <td>${priorityBadge(r.priority)}</td>
+      <td class="right"><a class="btn btn-primary btn-sm" href="#/report/${enc(r.reportCode)}">Review</a></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function assignmentsTable(tasks, empty) {
+  if (!tasks.length) return emptyCard(empty);
+  return `<div class="card table-scroll" style="padding:6px 8px;"><table>
+    <thead><tr><th>REPORT</th><th>CATEGORY</th><th>DESCRIPTION</th><th>ASSIGNED</th><th>DUE DATE</th><th>PRIORITY</th><th>STATUS</th><th class="right">ACTION</th></tr></thead>
+    <tbody>${tasks.map((t) => `<tr class="row-link">
+      <td class="nowrap"><a class="inline-link" href="#/task/${enc(t.reportCode)}">#${esc(t.reportCode)}</a></td>
+      <td>${catBadge(t.category)}</td>
+      <td class="desc-cell" title="${esc(t.description)}">${esc(truncate(t.description, 50))}</td>
+      <td class="nowrap">${esc(fmtDay(t.assignedAt))}</td>
+      <td class="nowrap${t.isOverdue ? ' text-danger' : ''}" style="font-weight:600;">${esc(fmtDay(t.dueDate))}</td>
+      <td>${priorityBadge(t.priority)}</td>
+      <td>${taskStatusCell(t)}</td>
+      <td class="right"><a class="btn btn-primary btn-sm" href="#/task/${enc(t.reportCode)}">${t.workflowState === 'assigned' || t.workflowState === 'in_progress' ? 'Update' : 'View'}</a></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function resolvedTable(reports) {
+  if (!reports.length) return emptyCard('No resolved reports in this period.');
+  return `<div class="card table-scroll" style="padding:6px 8px;"><table>
+    <thead><tr><th>REPORT ID</th><th>CATEGORY</th><th>DESCRIPTION</th><th>RESOLVED BY</th><th>COMPLETED</th><th>DURATION</th><th>RESOLUTION NOTES</th></tr></thead>
+    <tbody>${reports.map((r) => `<tr class="row-link">
+      <td class="nowrap"><a class="inline-link" href="#/report/${enc(r.reportCode)}">#${esc(r.reportCode)}</a></td>
+      <td>${catBadge(r.category)}</td>
+      <td class="desc-cell" title="${esc(r.description)}">${esc(truncate(r.description, 40))}</td>
+      <td>${esc(r.resolvedBy || '—')}</td>
+      <td class="nowrap">${esc(fmtDate(r.resolvedAt))}</td>
+      <td class="nowrap">${esc(fmtMinutes(r.durationMinutes))}</td>
+      <td class="desc-cell" title="${esc(r.resolutionNote)}">${esc(truncate(r.resolutionNote, 50))}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+const tile = (label, value, foot) => `<div class="card stat-card"><div class="stat-top"><div class="stat-label">${esc(label)}</div></div><div class="stat-value">${esc(value)}</div><div class="stat-foot">${esc(foot)}</div></div>`;
+const num = (v, suffix) => (v === null || v === undefined ? '—' : `${v}${suffix || ''}`);
+
+/* =============== Dashboard =============== */
+Portal.on('/dashboard', 'dashboard', async (ctx) => {
+  Portal.crumb('Staff dashboard');
+  const data = await api('/staff/dashboard');
+  if (!ctx.alive()) return;
+  const s = data.stats;
+  const now = new Date();
+  const part = now.getHours() < 12 ? 'morning' : now.getHours() < 18 ? 'afternoon' : 'evening';
+  const dayLabel = now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' });
+  Portal.setBadge('badge-incoming', s.incoming.count);
+
+  const recent = data.recentIncoming.length ? `<div class="card table-scroll" style="padding:6px 8px;"><table>
+      <thead><tr><th style="width:46%;">REPORT DETAILS</th><th>PRIORITY</th><th>STATUS</th><th class="right">ACTION</th></tr></thead>
+      <tbody>${data.recentIncoming.map((r) => `<tr class="row-link">
+        <td><div class="report-cell"><div>${catBadge(r.category)} <span class="cell-primary" style="margin-left:6px;">${esc(r.title)}</span>
+          <div class="cell-sub">${esc(r.location || 'No location')} · ${esc(timeAgo(r.createdAt))}</div></div></div></td>
+        <td>${priorityBadge(r.priority)}</td><td>${ownerCell(r)}</td>
+        <td class="right"><a class="btn btn-primary btn-sm" href="#/report/${enc(r.reportCode)}">Review</a></td></tr>`).join('')}</tbody></table></div>` : emptyCard('No incoming reports right now. Nice work.');
+
+  ctx.render(`
+    ${pageHead(`Good ${part}, ${data.user.username}`, "Here's what needs attention across campus operations today.", '<a class="btn btn-primary" href="report.html">+ Create staff report</a>', dayLabel)}
+    <h3 class="section-title" style="margin-bottom:12px;">Workload overview</h3>
+    <div class="stat-grid">
+      ${tile('Incoming', s.incoming.count, `${s.incoming.critical} marked critical`)}
+      ${tile('In progress', s.inProgress.count, `Across ${s.inProgress.teams} team${s.inProgress.teams === 1 ? '' : 's'}`)}
+      ${tile('Resolved today', s.resolvedToday, 'Approved by management')}
+      ${tile('Assigned to you', s.assignedToYou.count, `${s.assignedToYou.dueToday} due today`)}
+    </div>
+    <div class="section-head-row"><div><h3 class="section-title">Recent incoming reports</h3><p class="section-sub">Prioritised by urgency and time received</p></div><a class="link-arrow" href="#/incoming">View all reports →</a></div>
+    ${recent}`);
+});
+
+/* =============== Incoming reports =============== */
+Portal.on('/incoming', 'incoming', async (ctx) => {
+  Portal.crumb('Incoming reports');
+  const defs = [
+    { id: 'f-search', kind: 'search', param: 'search', placeholder: 'Search reports…', value: ctx.query.search || '' },
+    { id: 'f-category', kind: 'select', param: 'category', title: 'Category', options: CATEGORY_OPTIONS },
+    { id: 'f-priority', kind: 'select', param: 'priority', title: 'Priority', options: [['', 'All priorities'], ...PRIORITY_LIST.map((p) => [p, p])] },
+    { id: 'f-sort', kind: 'select', param: 'sort', title: 'Sort', options: [['newest', 'Newest first'], ['priority', 'Most urgent first']] },
+    { id: 'f-from', kind: 'date', param: 'from', title: 'From' },
+    { id: 'f-to', kind: 'date', param: 'to', title: 'To' },
+  ];
+  ctx.render(`${pageHead('Incoming reports', 'New reports nobody has taken yet')}${filterBar(defs)}<div id="list-area"></div>`);
+  let page = 1;
+  const load = async () => {
+    const area = $('#list-area');
+    area.innerHTML = '<div class="loading">Loading…</div>';
+    try {
+      const data = await api('/staff/reports/incoming', { query: { ...readFilters(defs), page, limit: 15 } });
+      if (!ctx.alive()) return;
+      Portal.setBadge('badge-incoming', data.pagination.total);
+      area.innerHTML = incomingTable(data.reports) + pagerHtml(data.pagination);
+      bindPager(area, (p) => { page = p; load(); });
+    } catch (e) { if (ctx.alive()) area.innerHTML = errorHtml(e); }
+  };
+  bindFilters(defs, () => { page = 1; load(); });
+  await load();
+});
+
+/* =============== Review an incoming report (and take it) =============== */
+Portal.on('/report/:code', 'incoming', async (ctx) => {
+  const { report: d } = await api(`/reports/${enc(ctx.params.code)}`);
+  if (!ctx.alive()) return;
+  Portal.crumb(`Report #${d.reportCode}`);
+  const mine = d.assignedTo && ME && d.assignedTo.id === ME.id;
+  const open = ['new', 'assigned'].includes(d.workflowState) && !d.assignedTo;
+
+  let side;
+  if (open) {
+    side = `<div class="card side-panel"><h3>Take this report</h3>
+      <div class="field"><label class="field-label" for="c-prio">Priority</label>
+        <select class="input" id="c-prio">${PRIORITY_LIST.map((p) => `<option${p === d.priority ? ' selected' : ''}>${p}</option>`).join('')}</select>
+        <div class="field-error" id="err-priority"></div></div>
+      <div class="field"><label class="field-label" for="c-due">Due date</label>
+        <input class="input" type="date" id="c-due" min="${todayLocalISO()}" value="${esc(d.estimatedCompletion || todayLocalISO(DEFAULT_DUE_DAYS[d.priority] || 5))}">
+        <div class="field-error" id="err-dueDate"></div></div>
+      <button class="btn btn-primary btn-block" id="claim-btn">Take this report</button>
+      <p class="hint" style="margin-top:10px;">It will move to your Assignments. The reporter is told a team is on it.</p></div>`;
+  } else if (mine) {
+    side = `<div class="card side-panel"><div class="banner banner-ok"><b>This report is yours.</b></div><a class="btn btn-primary btn-block" href="#/task/${enc(d.reportCode)}">Open my task</a></div>`;
+  } else {
+    side = `<div class="card side-panel"><div class="banner banner-info"><b>${d.assignedTo ? `Assigned to ${esc(d.assignedTo.username)}` : esc(d.stateLabel)}.</b> You can view it, but only the assigned person can update it.</div></div>`;
+  }
+
+  ctx.render(`${pageHead('Report details', `#${d.reportCode}`, '<a class="btn btn-outline" href="#/incoming">← Incoming reports</a>')}
+    <div class="detail-grid"><div>${reportCard(d)}${technicianCard(d)}</div><div>${side}${d.timeline && d.timeline.length ? `<div class="card side-panel" style="margin-top:14px;"><h3>Timeline</h3>${timelineHtml(d.timeline)}</div>` : ''}</div></div>`);
+
+  if (open) {
+    const prio = $('#c-prio'), due = $('#c-due');
+    prio.addEventListener('change', () => { if (!d.estimatedCompletion) due.value = todayLocalISO(DEFAULT_DUE_DAYS[prio.value] || 5); });
+    const btn = $('#claim-btn');
+    btn.addEventListener('click', async () => {
+      showFieldErrors(null);
+      btn.disabled = true;
+      try {
+        await api(`/staff/reports/${enc(d.reportCode)}/claim`, { method: 'POST', body: { priority: prio.value, dueDate: due.value } });
+        toast(`Report #${d.reportCode} added to your assignments`);
+        refreshIncomingBadge();
+        location.hash = `#/task/${enc(d.reportCode)}`;
+      } catch (e) {
+        if (!showFieldErrors(e)) toast(e.message, 'err');
+        btn.disabled = false;
+        if (e.status === 409) refreshIncomingBadge();
+      }
+    });
+  }
+});
+
+/* =============== Assignments =============== */
+Portal.on('/assignments', 'assignments', async (ctx) => {
+  Portal.crumb('My assignments');
+  let tab = ['active', 'overdue', 'completed'].includes(ctx.query.tab) ? ctx.query.tab : 'active';
+  let page = 1;
+  ctx.render(`${pageHead('My assignments', 'Tasks assigned to you for resolution')}<div id="list-area"></div>`);
+  const EMPTY = { active: 'You have no active tasks. Take one from Incoming reports.', overdue: 'Nothing is overdue. Well done.', completed: 'No tasks finished in the last 7 days.' };
+  const load = async () => {
+    const area = $('#list-area');
+    try {
+      const data = await api('/staff/assignments', { query: { tab, page, limit: 15 } });
+      if (!ctx.alive()) return;
+      const s = data.stats, c = data.counts;
+      const tabBtn = (key, label, n) => `<div class="tab-item${tab === key ? ' active' : ''}" data-tab="${key}">${label}<span class="tab-count">${n}</span></div>`;
+      area.innerHTML = `
+        <div class="stat-grid">
+          ${tile('Total active tasks', s.totalActive, `${s.inProgress} in progress, ${s.notStarted} not started`)}
+          ${tile('Overdue items', s.overdue, 'Past their due date')}
+          ${tile('Avg resolution', s.avgResolutionHours === null ? '—' : `${s.avgResolutionHours} hrs`, 'From assignment to fix')}
+          ${tile('SLA compliance', num(s.slaCompliancePercent, '%'), 'Finished by the due date')}
+        </div>
+        <div class="tabs-row">${tabBtn('active', 'Active', c.active)}${tabBtn('overdue', 'Overdue', c.overdue)}${tabBtn('completed', 'Completed this week', c.completedThisWeek)}</div>
+        ${assignmentsTable(data.tasks, EMPTY[tab])}${pagerHtml(data.pagination, 'tasks')}`;
+      $$('[data-tab]', area).forEach((t) => t.addEventListener('click', () => { tab = t.dataset.tab; page = 1; load(); }));
+      bindPager(area, (p) => { page = p; load(); });
+    } catch (e) { if (ctx.alive()) area.innerHTML = errorHtml(e); }
+  };
+  await load();
+});
+
+/* =============== One task: start work / submit the fix =============== */
+Portal.on('/task/:code', 'assignments', async (ctx) => {
+  const { report: d } = await api(`/reports/${enc(ctx.params.code)}`);
+  if (!ctx.alive()) return;
+  Portal.crumb(`Task #${d.reportCode}`);
+  const mine = d.assignedTo && ME && d.assignedTo.id === ME.id;
+  const hasAfter = d.photos && d.photos.after && d.photos.after.length > 0;
+
+  let side;
+  if (!mine) {
+    side = `<div class="card side-panel"><div class="banner banner-info"><b>${d.assignedTo ? `Assigned to ${esc(d.assignedTo.username)}` : 'Not assigned to you'}.</b> Only the assigned person can update this report.</div></div>`;
+  } else if (d.workflowState === 'pending_review') {
+    side = `<div class="card side-panel"><div class="banner banner-info"><b>Waiting for management review.</b> You'll see it under Completed once it is approved or sent back.</div></div>`;
+  } else if (d.workflowState === 'resolved') {
+    side = `<div class="card side-panel"><div class="banner banner-ok"><b>Resolved.</b> Management approved this fix.</div></div>`;
+  } else {
+    const back = d.reviewNote && d.workflowState === 'in_progress'
+      ? `<div class="banner banner-warn"><b>Management asked for more information:</b><br>${esc(d.reviewNote)}</div>` : '';
+    const start = d.workflowState === 'assigned'
+      ? `<div style="margin-bottom:18px;"><button class="btn btn-outline btn-block" id="start-btn">Start work</button><p class="hint" style="margin-top:6px;">Tells the reporter work has begun.</p></div>` : '';
+    side = `<div class="card side-panel"><h3>Update this task</h3>${back}${start}
+      <div class="field"><label class="field-label" for="s-note">What was done</label>
+        <textarea class="input" id="s-note" maxlength="2000" placeholder="Describe the fix, e.g. replaced the failed coupling and tested the pressure…"></textarea>
+        <div class="field-error" id="err-note"></div></div>
+      <div class="field"><label class="field-label" for="s-photos">"After" photos${hasAfter ? ' (optional — you already added some)' : ' (at least one)'}</label>
+        <input class="input" type="file" id="s-photos" accept="image/jpeg,image/png,image/webp" multiple>
+        <div class="file-previews" id="s-previews"></div>
+        <div class="field-error" id="err-photos"></div>
+        <div class="hint">JPG, PNG or WebP · up to 5 photos · 5 MB each</div></div>
+      <button class="btn btn-primary btn-block" id="submit-btn">Send to management for review</button></div>`;
+  }
+
+  ctx.render(`${pageHead(`Task #${d.reportCode}`, d.title, '<a class="btn btn-outline" href="#/assignments">← My assignments</a>')}
+    <div class="detail-grid"><div>${reportCard(d)}${technicianCard(d)}</div><div>${side}${infoCard(d)}</div></div>`);
+
+  const startBtn = $('#start-btn');
+  if (startBtn) {
+    startBtn.addEventListener('click', async () => {
+      startBtn.disabled = true;
+      try {
+        await api(`/staff/reports/${enc(d.reportCode)}/start`, { method: 'POST', body: {} });
+        toast('Work started');
+        Portal.refresh();
+      } catch (e) { toast(e.message, 'err'); startBtn.disabled = false; }
+    });
+  }
+
+  const fileEl = $('#s-photos');
+  if (fileEl) {
+    fileEl.addEventListener('change', () => {
+      const box = $('#s-previews');
+      box.innerHTML = '';
+      Array.from(fileEl.files).slice(0, 5).forEach((f) => {
+        const img = document.createElement('img');
+        img.alt = 'Selected photo';
+        img.src = URL.createObjectURL(f);
+        box.appendChild(img);
+      });
+    });
+    $('#submit-btn').addEventListener('click', async () => {
+      showFieldErrors(null);
+      const note = $('#s-note').value.trim();
+      const files = Array.from(fileEl.files);
+      const problems = {};
+      if (note.length < 10) problems.note = 'Please describe what was done (at least 10 characters)';
+      if (files.length > 5) problems.photos = 'You can upload at most 5 photos';
+      else if (files.some((f) => f.size > 5 * 1024 * 1024)) problems.photos = 'Each photo must be 5 MB or smaller';
+      else if (!files.length && !hasAfter) problems.photos = 'Please attach at least one "after" photo as evidence';
+      if (Object.keys(problems).length) {
+        Object.entries(problems).forEach(([k, m]) => { $(`#err-${k}`).textContent = m; });
+        return;
+      }
+      const form = new FormData();
+      form.append('note', note);
+      files.forEach((f) => form.append('photos', f));
+      const btn = $('#submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      try {
+        await api(`/staff/reports/${enc(d.reportCode)}/resolution`, { method: 'POST', form });
+        toast('Sent to management for review');
+        location.hash = '#/assignments?tab=completed';
+      } catch (e) {
+        if (!showFieldErrors(e)) toast(e.message, 'err');
+        btn.disabled = false;
+        btn.textContent = 'Send to management for review';
+      }
+    });
+  }
+});
+
+/* =============== Resolved =============== */
+Portal.on('/resolved', 'resolved', async (ctx) => {
+  Portal.crumb('Resolved reports');
+  const defs = [
+    { id: 'f-days', kind: 'select', param: 'days', title: 'Period', value: '30', options: [['7', 'Last 7 days'], ['30', 'Last 30 days'], ['90', 'Last 90 days'], ['365', 'Last 12 months']] },
+    { id: 'f-category', kind: 'select', param: 'category', title: 'Category', options: CATEGORY_OPTIONS },
+    { id: 'f-search', kind: 'search', param: 'search', placeholder: 'Search resolved reports…' },
+    { id: 'f-mine', kind: 'check', param: 'mine', label: 'Only mine' },
+  ];
+  ctx.render(`${pageHead('Resolved reports', 'Completed and closed reports')}${filterBar(defs)}<div id="list-area"></div>`);
+  let page = 1;
+  const load = async () => {
+    const area = $('#list-area');
+    area.innerHTML = '<div class="loading">Loading…</div>';
+    try {
+      const data = await api('/staff/reports/resolved', { query: { ...readFilters(defs), page, limit: 15 } });
+      if (!ctx.alive()) return;
+      const s = data.stats;
+      area.innerHTML = `<div class="stat-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+          ${tile(`Resolved (last ${data.days} days)`, s.resolved, 'Approved by management')}
+          ${tile('Avg resolution speed', s.avgResolutionHours === null ? '—' : `${s.avgResolutionHours} hrs`, 'From assignment to fix')}
+          ${tile('SLA compliance', num(s.slaCompliancePercent, '%'), 'Finished by the due date')}
+        </div>${resolvedTable(data.reports)}${pagerHtml(data.pagination)}`;
+      bindPager(area, (p) => { page = p; load(); });
+    } catch (e) { if (ctx.alive()) area.innerHTML = errorHtml(e); }
+  };
+  bindFilters(defs, () => { page = 1; load(); });
+  await load();
+});
+
+/* =============== Team =============== */
+Portal.on('/team', 'team', async (ctx) => {
+  Portal.crumb('Team overview');
+  const data = await api('/staff/team');
+  if (!ctx.alive()) return;
+  const s = data.summary;
+  const cards = data.members.map((m) => `<div class="card team-card">
+      <div class="team-card-top"><div class="team-avatar">${esc(m.username.slice(0, 2).toUpperCase())}</div></div>
+      <div class="cell-primary" style="margin-bottom:8px;">${esc(m.username)}</div>
+      <div class="team-field"><span class="k">Department</span><span class="v">${esc(m.department ? m.department.name : 'Not set')}</span></div>
+      <div class="team-field"><span class="k">Active assignments</span><span class="v">${m.activeAssignments} active</span></div>
+      <div class="team-field"><span class="k">Resolved (this month)</span><span class="v" style="color:var(--success);">${m.resolvedThisMonth} resolved</span></div></div>`).join('');
+  ctx.render(`${pageHead('Team overview', 'Facilities and safety team members')}
+    <div class="stat-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+      ${tile('Total team members', `${s.totalMembers} Active Staff`, 'Staff accounts')}
+      ${tile('Active load index', `${s.activeLoadPerPerson} per person`, 'Open assignments each')}
+      ${tile('Resolved this week', `${s.resolvedThisWeek} tasks`, 'Approved by management')}
+    </div>
+    ${cards ? `<div class="team-grid">${cards}</div>` : emptyCard('No staff accounts yet. Management can create them.')}`);
+});
+
+/* =============== start =============== */
+(async () => {
+  if (!Auth.requireSession()) return;
+  const session = Auth.getSession();
+  if (session.role !== 'staff') { location.replace(Auth.ROLE_HOME[session.role] || 'role.html'); return; }
+  try { ME = (await api('/auth/me')).user; } catch (e) { /* the guard below handles a bad token */ }
+  if (Portal.boot({ role: 'staff', home: '#/dashboard', searchRoute: '#/incoming' })) refreshIncomingBadge();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1529 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Eco Aware — My Reports</title>
+  <style>
+/* ===== css/styles.css ===== */
+/* ==========================================================================
+   ECO AWARE — DESIGN TOKENS
+   Page 1 (Home) is the master visual reference. Every color, radius and
+   shadow used across the app is defined ONCE here and consumed everywhere
+   via var(--token). Don't hard-code colors in page-specific CSS.
+   ========================================================================== */
+
+:root {
+  /* Brand green */
+  --primary-green: #1e8449;
+  --primary-green-dark: #166638;
+  --primary-green-light: #e8f5ec;
+
+  /* Neutrals */
+  --background: #f4f6f5;
+  --card-background: #ffffff;
+  --text-primary: #1a2b22;
+  --text-secondary: #6b7a72;
+  --border: #e3e8e5;
+
+  /* Status colors */
+  --success: #1e8449;
+  --success-bg: #e8f5ec;
+  --warning: #b7791f;
+  --warning-bg: #fdf3dc;
+  --info: #2563eb;
+  --info-bg: #e8f0fe;
+  --danger: #c0392b;
+
+  /* Category tints */
+  --cat-water: #2563eb;
+  --cat-water-bg: #e8f0fe;
+  --cat-waste: #c0392b;
+  --cat-waste-bg: #fbe7e5;
+  --cat-energy: #b7791f;
+  --cat-energy-bg: #fdf3dc;
+  --cat-general: #1e8449;
+  --cat-general-bg: #e8f5ec;
+
+  /* The ONE floating camera button gradient — Page 1 is the source of truth.
+     Used only by .camera-fab. Change it here to change every camera button. */
+  --camera-gradient: linear-gradient(135deg, #1e8449 0%, #2563eb 55%, #7c3aed 100%);
+  --camera-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+
+  /* Sign-in / auth screens (role, profile, sign-up, verify). Colors sampled from the design PDF.
+     The three login screens use a slightly different set — see .auth-theme-login in css/auth.css. */
+  --auth-green: #13b466;
+  --auth-green-dark: #0f9c58;
+  --auth-green-soft: #e0f6ea;
+  --auth-panel: #143d2b;
+  --auth-surface: #f0f4f3;
+  --auth-input: #f0f4f3;
+
+  /* Shape & elevation */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 3px rgba(16, 24, 20, 0.06), 0 1px 2px rgba(16, 24, 20, 0.04);
+  --shadow-nav: 0 -2px 12px rgba(16, 24, 20, 0.06);
+
+  /* Layout */
+  --max-width: 1040px;
+  --header-height: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--background);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+img { max-width: 100%; display: block; }
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  flex: 1;
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 24px 24px 120px;
+}
+
+@media (max-width: 640px) {
+  .page-content { padding: 16px 16px 120px; }
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+
+.site-header {
+  background: var(--primary-green);
+  color: #fff;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 20;
+}
+
+.site-header .inner {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+}
+
+.brand .logo-mark {
+  width: 30px;
+  height: 30px;
+  background: #fff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-green);
+  font-size: 16px;
+}
+
+.brand .brand-name {
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.header-nav a {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.header-nav a.active {
+  font-weight: 700;
+  opacity: 1;
+}
+
+.lang-pill,
+.menu-btn {
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-nav .header-auth-btn {
+  background: #fff;
+  color: var(--primary-green);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 1;
+}
+
+.header-nav .header-auth-btn:hover { opacity: 0.92; }
+
+.menu-btn {
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.mobile-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 24px;
+  background: var(--card-background);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 8px;
+  min-width: 180px;
+}
+
+.mobile-menu.open {
+  display: block;
+}
+
+.mobile-menu a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.mobile-menu a:hover {
+  background: var(--background);
+}
+
+@media (max-width: 760px) {
+  .header-nav-links {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   BREADCRUMB
+   ========================================================================== */
+
+.breadcrumb {
+  border-bottom: 1px solid var(--border);
+  background: var(--card-background);
+}
+
+.breadcrumb .inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 12px 24px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.breadcrumb .crumb.current {
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   CAMERA FLOATING BUTTON — the ONE implementation, used on every page.
+   ========================================================================== */
+
+.camera-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--camera-gradient);
+  box-shadow: var(--camera-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  font-size: 22px;
+}
+
+/* ==========================================================================
+   BOTTOM NAVIGATION
+   ========================================================================== */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card-background);
+  box-shadow: var(--shadow-nav);
+  z-index: 30;
+}
+
+.bottom-nav .inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  position: relative;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.nav-item.active {
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+.nav-item .icon {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.nav-camera-slot {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-camera-slot .camera-fab {
+  margin-top: -28px;
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+
+.site-footer {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   CARD
+   ========================================================================== */
+
+.card {
+  background: var(--card-background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+/* ==========================================================================
+   BADGES
+   ========================================================================== */
+
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+
+.badge-resolved { color: var(--success); background: var(--success-bg); }
+.badge-in-progress { color: var(--warning); background: var(--warning-bg); }
+.badge-pending { color: var(--info); background: var(--info-bg); }
+
+.cat-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 3px 10px;
+}
+
+.cat-water { color: var(--cat-water); background: var(--cat-water-bg); }
+.cat-waste { color: var(--cat-waste); background: var(--cat-waste-bg); }
+.cat-energy { color: var(--cat-energy); background: var(--cat-energy-bg); }
+.cat-general { color: var(--cat-general); background: var(--cat-general-bg); }
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: var(--radius-sm);
+  padding: 13px 22px;
+  border: none;
+  transition: opacity 0.15s ease;
+}
+
+.btn:hover { opacity: 0.92; }
+
+.btn-primary { background: var(--primary-green); color: #fff; }
+.btn-full { width: 100%; }
+
+.btn-pill-outline {
+  background: #fff;
+  color: var(--primary-green);
+  border: 1px solid var(--primary-green);
+  border-radius: var(--radius-pill);
+}
+
+.btn-pill-white {
+  background: #fff;
+  color: var(--primary-green);
+  border-radius: var(--radius-pill);
+}
+
+/* ==========================================================================
+   FORM CONTROLS
+   ========================================================================== */
+
+.field-label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.field-label .req { color: var(--danger); }
+
+.field-control {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: #fff;
+  outline: none;
+}
+
+.field-control:focus {
+  border-color: var(--primary-green);
+}
+
+select.field-control {
+  appearance: none;
+}
+
+.select-wrap {
+  position: relative;
+}
+
+.select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+textarea.field-control {
+  resize: vertical;
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 12.5px;
+  margin-top: 6px;
+}
+
+.info-box {
+  background: var(--success-bg);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.info-box.tone-notice {
+  background: var(--info-bg);
+}
+
+.form-group {
+  margin-bottom: 22px;
+}
+
+/* ==========================================================================
+   HOME PAGE
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  padding: 40px;
+  margin-bottom: 24px;
+  background-image: linear-gradient(120deg, rgba(20, 90, 55, 0.92), rgba(30, 132, 73, 0.75)),
+    url('https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=1400&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.hero .inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.hero h1 {
+  color: #fff;
+  font-size: 32px;
+  margin: 0 0 12px;
+}
+
+.hero p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 480px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 700px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-header-row h3 { margin: 0; font-size: 16px; }
+
+.stat-row { display: flex; gap: 24px; }
+.stat-divider { width: 1px; background: var(--border); }
+.stat-value { font-size: 26px; font-weight: 700; color: var(--primary-green); }
+.stat-label { font-size: 12.5px; color: var(--text-secondary); }
+
+.activity-empty {
+  text-align: center;
+  padding: 18px 8px;
+  color: var(--text-secondary);
+}
+
+.activity-empty .title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+.activity-empty .desc { font-size: 13px; line-height: 1.5; }
+
+.guidelines-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+/* ==========================================================================
+   REPORT ISSUE PAGE
+   ========================================================================== */
+
+.capture-box {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  background: #fafcfb;
+}
+
+.capture-box.has-image {
+  background: transparent;
+  padding: 12px;
+}
+
+.capture-box img {
+  max-height: 180px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  margin: 0 auto;
+}
+
+.capture-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary-green-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  color: var(--primary-green);
+  font-size: 18px;
+}
+
+.capture-box .hint {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   FEEDBACK PAGE
+   ========================================================================== */
+
+.star-row { display: flex; gap: 6px; }
+
+.star-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  font-size: 26px;
+  color: var(--border);
+}
+
+.star-btn.filled { color: #e0a63e; }
+
+/* ==========================================================================
+   MY REPORTS PAGE
+   ========================================================================== */
+
+.filter-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text-primary);
+  border-radius: var(--radius-pill);
+  padding: 8px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.tab-btn.active {
+  border: none;
+  background: var(--primary-green);
+  color: #fff;
+}
+
+.report-card { margin-bottom: 16px; }
+
+.report-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.report-card-top h3 { margin: 0; font-size: 16px; }
+
+.report-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.report-card-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
+.report-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.report-card-id {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.view-details-link {
+  background: none;
+  border: none;
+  color: var(--primary-green);
+  font-weight: 600;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 40px 0;
+}
+
+/* ==========================================================================
+   REPORT DETAIL PAGES
+   ========================================================================== */
+
+.detail-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.detail-top h1 { font-size: 24px; margin: 0; }
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.notice-box {
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  font-size: 14px;
+}
+
+.notice-success { background: var(--success-bg); color: var(--text-primary); }
+.notice-info { background: var(--info-bg); color: var(--text-primary); }
+
+.notice-warning-block {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.section-title { font-size: 15px; margin: 0 0 12px; }
+
+.image-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 600px) {
+  .image-grid { grid-template-columns: 1fr; }
+}
+
+.image-block {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.image-block img { width: 100%; height: 190px; object-fit: cover; }
+
+.image-tag {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.tag-before { color: var(--danger); }
+.tag-after { color: var(--success); }
+
+.summary-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.summary-row .label {
+  width: 130px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   TIMELINE
+   ========================================================================== */
+
+.timeline-step {
+  display: flex;
+  gap: 14px;
+}
+
+.timeline-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+  background: var(--border);
+}
+
+.timeline-dot.done { background: var(--success); }
+.timeline-dot.active { background: var(--warning); }
+
+.timeline-line {
+  width: 2px;
+  flex: 1;
+  background: var(--border);
+  min-height: 28px;
+}
+
+.timeline-body { padding-bottom: 18px; }
+.timeline-body:last-child { padding-bottom: 0; }
+
+.timeline-title { font-weight: 600; font-size: 14px; color: var(--text-primary); }
+.timeline-title.active { color: var(--warning); }
+.timeline-date { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+.timeline-note { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+/* ==========================================================================
+   PLACEHOLDER PAGE
+   ========================================================================== */
+
+.placeholder-title { font-size: 26px; margin: 0 0 6px; }
+.placeholder-desc { color: var(--text-secondary); margin: 0 0 24px; font-size: 14.5px; }
+
+/* ===== keeps the fixed bottom nav clear of phone system bars ===== */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .bottom-nav { padding-bottom: env(safe-area-inset-bottom, 0px); }
+}
+
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="header-root"></div>
+    <div id="breadcrumb-root"></div>
+
+    <main class="page-content">
+      <h1 style="font-size: 26px; margin: 0 0 6px;">My Reports</h1>
+      <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 14.5px;">
+        Track and manage your submitted environmental reports.
+      </p>
+
+      <div class="filter-tabs" id="filter-tabs"></div>
+      <div id="reports-list"></div>
+    </main>
+
+    <div id="footer-root"></div>
+    <div id="bottomnav-root"></div>
+  </div>
+
+  <script>
+/* ===== js/data.js ===== */
+// Mock/local data only — no backend exists yet.
+// Swap getReports()/getReportById() for real fetch() calls once an API exists;
+// the shape below is what every page expects back.
+
+const CATEGORIES = [
+  { value: 'waste', label: 'Waste' },
+  { value: 'water', label: 'Water' },
+  { value: 'energy', label: 'Energy' },
+  { value: 'general', label: 'General / Other' },
+];
+
+const FEEDBACK_CATEGORIES = [
+  { value: 'cleanliness', label: 'Campus Cleanliness' },
+  { value: 'energy', label: 'Energy' },
+  { value: 'water', label: 'Water' },
+  { value: 'general', label: 'General' },
+];
+
+// Reports live in the browser (localStorage) — there's no backend yet.
+// Submitting a report on report.html calls addReport(); every other page
+// reads back through getReports()/getReportById().
+const REPORTS_KEY = 'ea_reports';
+
+function readReports() {
+  try {
+    const raw = localStorage.getItem(REPORTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function writeReports(list) {
+  try {
+    localStorage.setItem(REPORTS_KEY, JSON.stringify(list));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function nextReportId() {
+  const year = new Date().getFullYear();
+  const n = String(Math.floor(1000 + Math.random() * 9000));
+  return `EA-${year}-${n}`;
+}
+
+/**
+ * @param {{category:string, description:string, photos:string[]}} fields
+ * @returns {object} the newly stored report
+ */
+function addReport(fields) {
+  const categoryLabel = (CATEGORIES.find((c) => c.value === fields.category) || {}).label || fields.category;
+  const report = {
+    id: nextReportId(),
+    title: `${categoryLabel} issue: ${fields.description.slice(0, 60)}${fields.description.length > 60 ? '…' : ''}`,
+    category: fields.category,
+    status: 'pending',
+    submittedOn: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+    description: fields.description,
+    photos: fields.photos || [],
+    statusInfo:
+      'Your report is currently in the campus sustainability operations queue and will be reviewed by the facilities team shortly.',
+    averageReviewTime: '2-3 business days',
+  };
+  const list = readReports();
+  list.unshift(report);
+  writeReports(list);
+  return report;
+}
+
+function getReports() {
+  return readReports();
+}
+
+function getReportById(id) {
+  return readReports().find((r) => r.id === id);
+}
+
+</script>
+  <script>
+/* ===== js/auth.js ===== */
+// ============================================================================
+// AUTH SERVICE  (frontend-only prototype)
+//
+// There is no backend yet, so accounts live in the browser (localStorage) and
+// the "emailed" verification code is generated locally. This file is the ONLY
+// place that knows how auth works — every page calls the `Auth` object below.
+// When a real API exists, replace the bodies of these methods with fetch()
+// calls and keep the same return shapes; no page code needs to change.
+//
+// NOTE: client-side auth is NOT secure. It exists so the UI flow can be
+// clicked through end to end. Real authentication must be enforced on a server.
+// ============================================================================
+
+const AUTH_STORAGE = {
+  users: 'ea_users',           // registered reporters (localStorage)
+  session: 'ea_session',       // who is signed in (localStorage)
+  pending: 'ea_pending_signup' // sign-up awaiting verification (sessionStorage)
+};
+
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
+
+// Where each role lands after a successful sign-in.
+const ROLE_HOME = {
+  reporter: 'index.html',
+  management: 'dashboard.html',
+  staff: 'staff.html',
+};
+
+// Management and staff accounts are meant to be issued by the sustainability
+// office rather than self-registered, so — like reporter — they each get one
+// fixed demo account to sign in with straight away. Reporter accounts can
+// also be created for real through Sign Up; the demo one is just there too
+// so the flow can be tried without going through sign-up first.
+const DEMO_ACCOUNTS = [
+  { role: 'reporter',   ids: ['alex@university.edu'],                    password: 'Reporter@123', name: 'Alex' },
+  { role: 'management', ids: ['manager@ecoaware.org'],                   password: 'Manager@123',  name: 'Campus Manager' },
+  { role: 'staff',      ids: ['staff.id@ecoaware.org', 'ea-staff-001'],  password: 'Staff@123',    name: 'Facilities Staff' },
+];
+
+// ---- small helpers ---------------------------------------------------------
+
+const AuthStore = {
+  read(storage, key, fallback) {
+    try {
+      const raw = storage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  },
+  write(storage, key, value) {
+    try {
+      storage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+  remove(storage, key) {
+    try {
+      storage.removeItem(key);
+    } catch (e) {
+      /* storage unavailable — nothing to remove */
+    }
+  },
+};
+
+function randomHex(bytes) {
+  const arr = new Uint8Array(bytes);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function randomDigits(count) {
+  const arr = new Uint32Array(count);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (n) => n % 10).join('');
+}
+
+async function sha256Hex(text) {
+  if (!(window.crypto && crypto.subtle)) {
+    throw new Error('crypto-unavailable');
+  }
+  const bytes = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ---- public API --------------------------------------------------------------
+
+const Auth = {
+  ROLE_HOME,
+
+  getSession() {
+    return AuthStore.read(localStorage, AUTH_STORAGE.session, null);
+  },
+
+  // Call at the very top of any app-page script (before DOMContentLoaded), the
+  // same way home.js does. Sends signed-out visitors to Select Your Role and
+  // returns false so the caller can bail out before touching the DOM.
+  requireSession() {
+    if (this.getSession()) return true;
+    location.replace('role.html');
+    return false;
+  },
+
+  logout() {
+    AuthStore.remove(localStorage, AUTH_STORAGE.session);
+  },
+
+  _startSession(role, name, id) {
+    const session = { role, name, id, at: Date.now() };
+    AuthStore.write(localStorage, AUTH_STORAGE.session, session);
+    return session;
+  },
+
+  /**
+   * Step 1 of reporter sign-up. Validates uniqueness, stores a pending record
+   * (password already hashed) and generates the verification code.
+   * @returns {Promise<{ok:true, pending:object} | {ok:false, field?:string, error:string}>}
+   */
+  async startSignUp({ email, username, phone, password }) {
+    const emailKey = email.trim().toLowerCase();
+    const userKey = username.trim().toLowerCase();
+    const users = AuthStore.read(localStorage, AUTH_STORAGE.users, []);
+
+    const emailTaken =
+      users.some((u) => u.email === emailKey) ||
+      DEMO_ACCOUNTS.some((a) => a.role === 'reporter' && a.ids.includes(emailKey));
+    if (emailTaken) {
+      return { ok: false, field: 'email', error: 'An account with this email already exists.' };
+    }
+    if (users.some((u) => u.usernameKey === userKey)) {
+      return { ok: false, field: 'username', error: 'That username is already taken.' };
+    }
+
+    let salt;
+    let hash;
+    try {
+      salt = randomHex(16);
+      hash = await sha256Hex(salt + password);
+    } catch (e) {
+      return {
+        ok: false,
+        error: 'Secure storage is unavailable in this browser context. Open the site via http://localhost instead of a plain file.',
+      };
+    }
+
+    const pending = {
+      email: emailKey,
+      username: username.trim(),
+      usernameKey: userKey,
+      phone: phone.trim(),
+      salt,
+      hash,
+      referenceCode: 'REF-EA' + randomDigits(4),
+      code: randomDigits(6), // a real backend would email this and never send it to the browser
+      expiresAt: Date.now() + OTP_TTL_MS,
+      attempts: 0,
+    };
+
+    if (!AuthStore.write(sessionStorage, AUTH_STORAGE.pending, pending)) {
+      return { ok: false, error: 'Could not save your sign-up in this browser. Check that storage is enabled.' };
+    }
+    return { ok: true, pending };
+  },
+
+  getPending() {
+    return AuthStore.read(sessionStorage, AUTH_STORAGE.pending, null);
+  },
+
+  /** Issues a fresh code (and resets the attempt counter). */
+  resendCode() {
+    const pending = this.getPending();
+    if (!pending) return null;
+    pending.code = randomDigits(6);
+    pending.expiresAt = Date.now() + OTP_TTL_MS;
+    pending.attempts = 0;
+    AuthStore.write(sessionStorage, AUTH_STORAGE.pending, pending);
+    return pending;
+  },
+
+  /**
+   * Step 2 of reporter sign-up. On success the account is created and the
+   * reporter is signed in.
+   * @returns {{ok:true, session:object} | {ok:false, reason?:string, error:string}}
+   */
+  verifyCode(input) {
+    const pending = this.getPending();
+    if (!pending) {
+      return { ok: false, reason: 'no-pending', error: 'Your sign-up session has expired. Please start again.' };
+    }
+    if (Date.now() > pending.expiresAt) {
+      return { ok: false, error: 'This code has expired. Please request a new one.' };
+    }
+    if (pending.attempts >= OTP_MAX_ATTEMPTS) {
+      return { ok: false, error: 'Too many incorrect attempts. Please request a new code.' };
+    }
+    if (input !== pending.code) {
+      pending.attempts += 1;
+      AuthStore.write(sessionStorage, AUTH_STORAGE.pending, pending);
+      const left = OTP_MAX_ATTEMPTS - pending.attempts;
+      return {
+        ok: false,
+        error: left > 0
+          ? `That code is incorrect. ${left} ${left === 1 ? 'attempt' : 'attempts'} left.`
+          : 'Too many incorrect attempts. Please request a new code.',
+      };
+    }
+
+    const users = AuthStore.read(localStorage, AUTH_STORAGE.users, []);
+    users.push({
+      email: pending.email,
+      username: pending.username,
+      usernameKey: pending.usernameKey,
+      phone: pending.phone,
+      salt: pending.salt,
+      hash: pending.hash,
+      role: 'reporter',
+      createdAt: Date.now(),
+    });
+    if (!AuthStore.write(localStorage, AUTH_STORAGE.users, users)) {
+      return { ok: false, error: 'Could not save your account in this browser. Check that storage is enabled.' };
+    }
+    AuthStore.remove(sessionStorage, AUTH_STORAGE.pending);
+    return { ok: true, session: this._startSession('reporter', pending.username, pending.email) };
+  },
+
+  /**
+   * @param {'reporter'|'management'|'staff'} role
+   * @param {string} identifier - email (reporter/management) or staff ID / email (staff)
+   * @returns {Promise<{ok:true, session:object} | {ok:false, error:string}>}
+   */
+  async login(role, identifier, password) {
+    const id = identifier.trim().toLowerCase();
+    const genericError = { ok: false, error: 'Incorrect email or password. Please try again.' };
+
+    const demo = DEMO_ACCOUNTS.find((a) => a.role === role && a.ids.includes(id));
+    if (demo) {
+      return demo.password === password
+        ? { ok: true, session: this._startSession(role, demo.name, id) }
+        : genericError;
+    }
+
+    if (role === 'reporter') {
+      const users = AuthStore.read(localStorage, AUTH_STORAGE.users, []);
+      const user = users.find((u) => u.email === id);
+      if (user) {
+        try {
+          const hash = await sha256Hex(user.salt + password);
+          if (hash === user.hash) {
+            return { ok: true, session: this._startSession('reporter', user.username, user.email) };
+          }
+        } catch (e) {
+          return {
+            ok: false,
+            error: 'Secure storage is unavailable in this browser context. Open the site via http://localhost instead of a plain file.',
+          };
+        }
+      }
+    }
+
+    return genericError;
+  },
+};
+
+</script>
+  <script>
+/* ===== js/components.js ===== */
+// ============================================================================
+// SHARED COMPONENTS
+// These functions are the single source of truth for markup that repeats on
+// every page. In particular, renderBottomNav() is the ONLY place in the whole
+// project that draws the floating camera button — every page calls it, so
+// there is exactly one camera button design across the entire app.
+// ============================================================================
+
+const NAV_LINKS = [
+  { label: 'Home', href: 'index.html' },
+  { label: 'Dashboard', href: 'dashboard.html' },
+  { label: 'Service', href: 'report.html' },
+  { label: 'Contact Us', href: 'contact.html' },
+];
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * @param {string} activeHref - current page's file name, e.g. "index.html"
+ */
+function renderHeader(activeHref) {
+  const root = document.getElementById('header-root');
+  if (!root) return;
+
+  const linksHtml = NAV_LINKS.map(
+    (link) =>
+      `<a href="${link.href}" class="${link.href === activeHref ? 'active' : ''}">${link.label}</a>`
+  ).join('');
+
+  // Sign In / Sign Out (session comes from js/auth.js)
+  const session = typeof Auth !== 'undefined' ? Auth.getSession() : null;
+  const authBtnHtml = session
+    ? `<button type="button" class="header-auth-btn" id="signout-btn" title="Signed in as ${escapeHtml(session.name)}">Sign Out</button>`
+    : `<a href="role.html" class="header-auth-btn">Sign In</a>`;
+
+  root.innerHTML = `
+    <header class="site-header">
+      <div class="inner">
+        <a href="index.html" class="brand">
+          <span class="logo-mark">🍃</span>
+          <span class="brand-name">Eco Aware</span>
+        </a>
+        <nav class="header-nav">
+          <span class="header-nav-links" style="display:flex; gap:28px;">${linksHtml}</span>
+          <button class="lang-pill">🌐 EN ▾</button>
+          ${authBtnHtml}
+          <button class="menu-btn" id="mobile-menu-toggle" aria-label="Open menu">☰</button>
+        </nav>
+      </div>
+      <div class="mobile-menu" id="mobile-menu">${linksHtml}</div>
+    </header>
+  `;
+
+  const signOut = document.getElementById('signout-btn');
+  if (signOut) {
+    signOut.addEventListener('click', () => {
+      Auth.logout();
+      window.location.href = 'role.html';
+    });
+  }
+
+  const toggle = document.getElementById('mobile-menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+  if (toggle && menu) {
+    toggle.addEventListener('click', () => menu.classList.toggle('open'));
+  }
+}
+
+/**
+ * @param {Array<{label: string, href?: string}>} trail - last item has no href (current page)
+ */
+function renderBreadcrumb(trail) {
+  const root = document.getElementById('breadcrumb-root');
+  if (!root) return;
+
+  const html = trail
+    .map((item, i) => {
+      const isLast = i === trail.length - 1;
+      const sep = isLast ? '' : '<span>/</span>';
+      const crumb =
+        item.href && !isLast
+          ? `<a href="${item.href}">${escapeHtml(item.label)}</a>`
+          : `<span class="crumb ${isLast ? 'current' : ''}">${escapeHtml(item.label)}</span>`;
+      return `<span style="display:flex; gap:6px;">${crumb}${sep}</span>`;
+    })
+    .join('');
+
+  root.innerHTML = `
+    <div class="breadcrumb">
+      <div class="inner">${html}</div>
+    </div>
+  `;
+}
+
+/**
+ * The ONE camera floating button implementation. Style source of truth:
+ * --camera-gradient / --camera-shadow in css/styles.css.
+ */
+function cameraFabHtml() {
+  return `
+    <a href="report.html" class="camera-fab" aria-label="Report an issue">📷</a>
+  `;
+}
+
+/**
+ * @param {string} activePage - one of 'home' | 'feedback' | 'reports' | 'staff' | ''
+ */
+function renderBottomNav(activePage) {
+  const root = document.getElementById('bottomnav-root');
+  if (!root) return;
+
+  const isActive = (key) => (activePage === key ? 'active' : '');
+
+  root.innerHTML = `
+    <nav class="bottom-nav">
+      <div class="inner">
+        <a href="index.html" class="nav-item ${isActive('home')}">
+          <span class="icon">🏠</span>Home
+        </a>
+        <a href="feedback.html" class="nav-item ${isActive('feedback')}">
+          <span class="icon">💬</span>Feedback
+        </a>
+        <div class="nav-camera-slot">${cameraFabHtml()}</div>
+        <a href="reports.html" class="nav-item ${isActive('reports')}">
+          <span class="icon">📄</span>Reports
+        </a>
+        <a href="staff.html" class="nav-item ${isActive('staff')}">
+          <span class="icon">👥</span>Staff
+        </a>
+      </div>
+    </nav>
+  `;
+}
+
+function renderFooter() {
+  const root = document.getElementById('footer-root');
+  if (!root) return;
+  root.innerHTML = `
+    <footer class="site-footer">
+      <div>© 2024 Eco Aware. All rights reserved.</div>
+      <div>Committed to a greener, cleaner campus.</div>
+    </footer>
+  `;
+}
+
+function statusBadgeHtml(status) {
+  const map = {
+    resolved: { label: 'Resolved', cls: 'badge-resolved' },
+    'in-progress': { label: 'In Progress', cls: 'badge-in-progress' },
+    pending: { label: 'Pending Review', cls: 'badge-pending' },
+  };
+  const s = map[status] || map.pending;
+  return `<span class="badge ${s.cls}">${s.label}</span>`;
+}
+
+function categoryBadgeHtml(category) {
+  const map = {
+    water: { label: 'Water', cls: 'cat-water' },
+    waste: { label: 'Waste', cls: 'cat-waste' },
+    energy: { label: 'Energy', cls: 'cat-energy' },
+    general: { label: 'General', cls: 'cat-general' },
+  };
+  const c = map[category] || map.general;
+  return `<span class="cat-badge ${c.cls}">${c.label}</span>`;
+}
+
+/** Call once per page after the DOM is ready. */
+function renderShell({ activeHeaderHref, breadcrumb, activeNav }) {
+  renderHeader(activeHeaderHref);
+  if (breadcrumb) renderBreadcrumb(breadcrumb);
+  renderFooter();
+  renderBottomNav(activeNav);
+}
+
+</script>
+  <script>
+/* ===== js/reports.js ===== */
+if (Auth.requireSession()) {
+const STATUS_TO_PAGE = {
+  resolved: 'report-resolved.html',
+  'in-progress': 'report-inprogress.html',
+  pending: 'report-pending.html',
+};
+
+const TABS = [
+  { key: 'all', label: 'All Reports' },
+  { key: 'in-progress', label: 'In Progress' },
+  { key: 'resolved', label: 'Resolved' },
+  { key: 'pending', label: 'Pending' },
+];
+
+let activeTab = 'all';
+
+function reportCardHtml(report) {
+  return `
+    <div class="card report-card">
+      <div class="report-card-top">
+        <h3>${escapeHtml(report.title)}</h3>
+        ${statusBadgeHtml(report.status)}
+      </div>
+      <div class="report-card-meta">
+        ${categoryBadgeHtml(report.category)}
+        <span>Submitted on ${report.submittedOn}</span>
+      </div>
+      <p class="report-card-desc">${escapeHtml(report.description)}</p>
+      <div class="report-card-bottom">
+        <span class="report-card-id">Report ID: #${report.id}</span>
+        <a class="view-details-link" href="${STATUS_TO_PAGE[report.status]}?id=${report.id}">
+          View Details →
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+function renderTabs() {
+  const root = document.getElementById('filter-tabs');
+  root.innerHTML = TABS.map(
+    (tab) =>
+      `<button class="tab-btn ${tab.key === activeTab ? 'active' : ''}" data-tab="${tab.key}">${tab.label}</button>`
+  ).join('');
+
+  root.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      activeTab = btn.getAttribute('data-tab');
+      renderTabs();
+      renderList();
+    });
+  });
+}
+
+function renderList() {
+  const root = document.getElementById('reports-list');
+  const reports = getReports();
+  const filtered = activeTab === 'all' ? reports : reports.filter((r) => r.status === activeTab);
+
+  if (filtered.length === 0) {
+    root.innerHTML = '<div class="empty-state">No reports in this category yet.</div>';
+    return;
+  }
+
+  root.innerHTML = filtered.map(reportCardHtml).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderShell({
+    activeHeaderHref: 'reports.html',
+    breadcrumb: [{ label: 'Eco Aware', href: 'index.html' }, { label: 'Reports' }],
+    activeNav: 'reports',
+  });
+  renderTabs();
+  renderList();
+});
+
+}
+
+</script>
+</body>
+</html>

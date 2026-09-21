@@ -1,0 +1,1511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Eco Aware — Management dashboard</title>
+<style>
+/* ===== design tokens (shared with the rest of Eco Aware) ===== */
+:root {
+  --primary-green: #1e8449;
+  --primary-green-dark: #166638;
+  --primary-green-light: #e8f5ec;
+
+  --background: #f4f6f5;
+  --card-background: #ffffff;
+  --text-primary: #1a2b22;
+  --text-secondary: #6b7a72;
+  --border: #e3e8e5;
+
+  --success: #1e8449;
+  --success-bg: #e8f5ec;
+  --warning: #b7791f;
+  --warning-bg: #fdf3dc;
+  --info: #2563eb;
+  --info-bg: #e8f0fe;
+  --danger: #c0392b;
+  --danger-bg: #fbe7e5;
+
+  --cat-water: #2563eb;
+  --cat-water-bg: #e8f0fe;
+  --cat-waste: #c0392b;
+  --cat-waste-bg: #fbe7e5;
+  --cat-energy: #b7791f;
+  --cat-energy-bg: #fdf3dc;
+  --cat-general: #1e8449;
+  --cat-general-bg: #e8f5ec;
+  --cat-safety: #7c3aed;
+  --cat-safety-bg: #f1e9fe;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 3px rgba(16, 24, 20, 0.06), 0 1px 2px rgba(16, 24, 20, 0.04);
+
+  /* Staff admin console */
+  --sidebar-bg: #123527;
+  --sidebar-bg-active: #1c4a36;
+  --sidebar-text: #cfe3d6;
+  --sidebar-text-dim: #8fae9c;
+  --sidebar-width: 248px;
+  --topbar-height: 64px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--background);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+
+/* ---------- shell ---------- */
+.app-shell { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 20px 18px;
+}
+.brand-mark {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--primary-green);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; flex-shrink: 0;
+}
+.brand-text .brand-name { font-weight: 700; font-size: 15px; color: #fff; line-height: 1.2; }
+.brand-text .brand-sub { font-size: 11.5px; color: var(--sidebar-text-dim); }
+
+.sidebar-section-label {
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  color: var(--sidebar-text-dim);
+  padding: 10px 20px 6px;
+  font-weight: 600;
+}
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--sidebar-text);
+  position: relative;
+}
+.nav-item svg { width: 17px; height: 17px; flex-shrink: 0; opacity: .85; }
+.nav-item:hover { background: rgba(255,255,255,0.06); }
+.nav-item.active { background: var(--sidebar-bg-active); color: #fff; }
+.nav-item.active svg { opacity: 1; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--primary-green);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.avatar-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #eef7ee;
+  color: var(--primary-green-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12.5px; font-weight: 700;
+  flex-shrink: 0;
+}
+.sidebar-footer .who-name { font-size: 12.5px; font-weight: 600; color: #fff; line-height: 1.3; }
+.sidebar-footer .who-role { font-size: 10.5px; color: var(--sidebar-text-dim); line-height: 1.3; }
+
+.main-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.topbar {
+  height: var(--topbar-height);
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 28px;
+  background: var(--card-background);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 5;
+}
+.topbar-breadcrumb { font-size: 13px; color: var(--text-secondary); }
+.topbar-breadcrumb b { color: var(--text-primary); font-weight: 600; }
+.topbar-search {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  width: 260px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.topbar-search svg { width: 15px; height: 15px; flex-shrink: 0; }
+.topbar-search input { border: none; background: none; outline: none; font: inherit; color: inherit; width: 100%; }
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); background: #fff; color: var(--text-secondary);
+}
+.icon-btn svg { width: 16px; height: 16px; }
+.topbar-user { display: flex; align-items: center; gap: 9px; padding-left: 4px; }
+.topbar-user .who-name { font-size: 13px; font-weight: 600; }
+.topbar-user .who-role { font-size: 11px; color: var(--text-secondary); }
+.topbar-user svg { width: 14px; height: 14px; color: var(--text-secondary); }
+
+.page-content { padding: 26px 28px 60px; max-width: 1180px; }
+
+/* ---------- generic components ---------- */
+.card {
+  background: var(--card-background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+.page-eyebrow { font-size: 12.5px; color: var(--primary-green); font-weight: 600; margin: 0 0 6px; }
+.page-title { font-size: 24px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.01em; }
+.page-desc { font-size: 13.5px; color: var(--text-secondary); margin: 0; }
+.page-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600;
+  padding: 9px 16px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn svg { width: 15px; height: 15px; }
+.btn-primary { background: var(--primary-green); color: #fff; }
+.btn-primary:hover { background: var(--primary-green-dark); }
+.btn-outline { background: #fff; border-color: var(--border); color: var(--text-primary); }
+.btn-sm { padding: 6px 13px; font-size: 12.5px; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+.stat-card { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.stat-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.stat-label { font-size: 12.5px; color: var(--text-secondary); font-weight: 500; }
+.stat-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.stat-icon svg { width: 15px; height: 15px; }
+.stat-value { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.stat-foot { font-size: 12px; color: var(--text-secondary); }
+
+.section-card { padding: 20px 22px; margin-bottom: 18px; }
+.section-head-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; gap: 14px; }
+.section-title { font-size: 15.5px; font-weight: 700; margin: 0 0 3px; }
+.section-sub { font-size: 12.5px; color: var(--text-secondary); margin: 0; }
+.section-actions { display: flex; align-items: center; gap: 12px; }
+.link-arrow { font-size: 12.5px; font-weight: 600; color: var(--primary-green); }
+.dropdown-chip {
+  display: flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 6px 11px; font-size: 12.5px; color: var(--text-primary); background: #fff;
+}
+.dropdown-chip svg { width: 12px; height: 12px; color: var(--text-secondary); }
+
+.filters-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-box {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 12px; background: #fff; color: var(--text-secondary); font-size: 13px;
+  flex: 1; min-width: 200px;
+}
+.search-box svg { width: 14px; height: 14px; }
+.search-box input { border: none; outline: none; background: none; font: inherit; color: var(--text-primary); width: 100%; }
+
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left; font-size: 10.5px; letter-spacing: .04em;
+  color: var(--text-secondary); font-weight: 600;
+  padding: 0 12px 10px; border-bottom: 1px solid var(--border);
+}
+tbody td { padding: 13px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+.cell-primary { font-weight: 600; font-size: 13.5px; }
+.cell-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.report-cell { display: flex; align-items: flex-start; gap: 10px; }
+.cat-icon {
+  width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.cat-icon svg { width: 15px; height: 15px; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 700; letter-spacing: .02em;
+}
+.badge-critical { color: #b91c1c; background: #fde3e0; }
+.badge-high { color: #b45309; background: #fde7c7; }
+.badge-medium { color: #b7791f; background: var(--warning-bg); }
+.badge-low { color: var(--success); background: var(--success-bg); }
+.status-dot { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-secondary); }
+.status-dot::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.status-unassigned { color: #9aa39d; }
+.status-assigned { color: var(--warning); }
+.status-in-review { color: var(--info); }
+.status-in-progress { color: var(--info); }
+.status-not-started { color: #9aa39d; }
+.status-overdue { color: var(--danger); }
+.status-resolved { color: var(--success); }
+
+.pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+.pagination-info { font-size: 12.5px; color: var(--text-secondary); }
+.pagination-btns { display: flex; gap: 8px; }
+
+.tabs-row { display: flex; gap: 6px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+.tab-item {
+  padding: 10px 4px; margin-right: 22px;
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  border-bottom: 2px solid transparent; cursor: pointer;
+}
+.tab-item.active { color: var(--primary-green); border-bottom-color: var(--primary-green); }
+
+.stars { color: #f0b429; font-size: 13px; letter-spacing: 1px; }
+.stars .dim { color: #e3e8e5; }
+
+.team-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.team-card { padding: 18px; }
+.team-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.team-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--primary-green-light); color: var(--primary-green-dark); display:flex;align-items:center;justify-content:center; font-weight:700; }
+.team-menu { color: var(--text-secondary); font-weight: 700; letter-spacing: 1px; }
+.team-field { display: flex; justify-content: space-between; font-size: 12.5px; padding: 5px 0; border-bottom: 1px dashed var(--border); }
+.team-field:last-of-type { border-bottom: none; }
+.team-field .k { color: var(--text-secondary); }
+.team-field .v { font-weight: 600; }
+.duty-dot { display: inline-flex; align-items: center; gap: 5px; }
+.duty-dot::before { content:''; width:7px; height:7px; border-radius:50%; background: currentColor; }
+.duty-available { color: var(--success); }
+.duty-busy { color: var(--warning); }
+.duty-away { color: #9aa39d; }
+.team-card-footer { margin-top: 12px; }
+
+.view { display: none; }
+.view.active { display: block; }
+
+@media (max-width: 980px) {
+  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ===================================================================
+   Portal additions (Stage 4): forms, badges, detail pages, toasts...
+   =================================================================== */
+.sidebar-footer .who { min-width: 0; flex: 1; }
+.sidebar-footer .who-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-signout {
+  background: none; border: 1px solid rgba(255,255,255,0.2); color: var(--sidebar-text);
+  border-radius: var(--radius-sm); font-size: 11.5px; padding: 5px 9px; flex-shrink: 0;
+}
+.sidebar-signout:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.nav-badge[hidden] { display: none; }
+
+/* state + category badges (values come straight from the API) */
+.badge { white-space: nowrap; }
+.badge-new { color: #b91c1c; background: #fde3e0; }
+.badge-assigned { color: var(--warning); background: var(--warning-bg); }
+.badge-in_progress { color: var(--info); background: var(--info-bg); }
+.badge-pending_review { color: #6d28d9; background: #f1e9fe; }
+.badge-resolved { color: var(--success); background: var(--success-bg); }
+.badge-cat-water { color: var(--cat-water); background: var(--cat-water-bg); }
+.badge-cat-waste { color: var(--cat-waste); background: var(--cat-waste-bg); }
+.badge-cat-energy { color: var(--cat-energy); background: var(--cat-energy-bg); }
+.badge-cat-safety { color: var(--cat-safety); background: var(--cat-safety-bg); }
+.badge-cat-other { color: var(--cat-general); background: var(--cat-general-bg); }
+.badge-muted { color: var(--text-secondary); background: var(--background); }
+
+/* forms */
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field-label { font-size: 10.5px; letter-spacing: .05em; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
+.input {
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; width: 100%;
+  font: inherit; font-size: 13px; background: #fff; color: var(--text-primary);
+}
+.input:focus { outline: 2px solid var(--primary-green-light); border-color: var(--primary-green); }
+textarea.input { resize: vertical; min-height: 84px; line-height: 1.5; }
+.input-inline { width: auto; padding: 8px 11px; }
+.field-error { color: var(--danger); font-size: 12px; min-height: 0; }
+.field-error:empty { display: none; }
+.hint { font-size: 12px; color: var(--text-secondary); }
+.check { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-primary); }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.btn-block { width: 100%; justify-content: center; }
+.btn-danger-outline { background: #fff; border-color: #efc4bf; color: var(--danger); }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+button { font-family: inherit; cursor: pointer; }
+
+/* banners, toast, loading */
+.banner { border-radius: var(--radius-sm); padding: 11px 14px; font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
+.banner-info { background: var(--info-bg); color: #1d4ed8; }
+.banner-warn { background: var(--warning-bg); color: #8a5a12; }
+.banner-ok { background: var(--success-bg); color: var(--success); }
+.banner-err { background: var(--danger-bg); color: var(--danger); }
+.banner b { font-weight: 700; }
+.toast-wrap { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
+.toast { background: #123527; color: #fff; padding: 11px 16px; border-radius: var(--radius-sm); font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.22); max-width: 380px; }
+.toast.err { background: #a52a1f; }
+.loading { padding: 44px; text-align: center; color: var(--text-secondary); font-size: 13.5px; }
+.empty { padding: 36px 16px; text-align: center; color: var(--text-secondary); font-size: 13.5px; }
+
+/* tables */
+tbody tr.row-link:hover { background: #f8faf9; }
+.desc-cell { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nowrap { white-space: nowrap; }
+.text-danger { color: var(--danger); font-weight: 600; }
+.text-muted { color: var(--text-secondary); }
+.right { text-align: right; }
+a.inline-link { color: var(--primary-green); font-weight: 600; }
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 6px; }
+.table-scroll { overflow-x: auto; }
+.tab-item .tab-count { font-size: 11px; background: var(--background); color: var(--text-secondary); border-radius: var(--radius-pill); padding: 1px 7px; margin-left: 6px; }
+.tab-item.active .tab-count { background: var(--primary-green-light); color: var(--primary-green-dark); }
+
+/* detail pages (report, assign, review, history, task) */
+.detail-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.detail-card { padding: 20px 22px; }
+.detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.detail-title { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+.detail-meta { font-size: 12.5px; color: var(--text-secondary); margin: 0 0 10px; }
+.detail-body-text { font-size: 13.5px; color: var(--text-primary); line-height: 1.6; margin: 12px 0 8px; white-space: pre-wrap; word-break: break-word; }
+.side-panel { padding: 20px; }
+.side-panel h3 { font-size: 14px; margin: 0 0 14px; }
+.photo-label { font-size: 10.5px; letter-spacing: .05em; font-weight: 700; color: var(--text-secondary); margin: 16px 0 8px; text-transform: uppercase; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.photo-grid a { display: block; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); aspect-ratio: 16/10; background: var(--background); }
+.photo-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.no-photo { font-size: 12.5px; color: var(--text-secondary); }
+.file-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.file-previews img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+.note-card { padding: 16px 20px; margin-top: 16px; }
+.note-label { font-size: 10.5px; letter-spacing: .05em; color: var(--text-secondary); font-weight: 700; margin: 0 0 8px; text-transform: uppercase; }
+.note-text { font-size: 13.5px; line-height: 1.55; margin: 0 0 10px; white-space: pre-wrap; word-break: break-word; }
+.note-foot { font-size: 12px; color: var(--text-secondary); }
+.kv { display: grid; grid-template-columns: 1fr; gap: 0; }
+.kv-row { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+.kv-row:last-child { border-bottom: none; }
+.kv-row .k { color: var(--text-secondary); }
+.kv-row .v { font-weight: 600; text-align: right; word-break: break-word; }
+.evidence-chip { display: block; border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+.evidence-ok { border: 1.5px solid var(--primary-green); background: var(--primary-green-light); color: var(--primary-green-dark); }
+.evidence-no { border: 1.5px solid #e6c98a; background: var(--warning-bg); color: #8a5a12; }
+
+.status-banner { background: var(--success-bg); color: var(--success); border-radius: var(--radius-sm); padding: 12px 16px; font-weight: 700; font-size: 13.5px; margin-bottom: 18px; }
+.status-banner .sb-label { display: block; font-size: 10.5px; letter-spacing: .05em; font-weight: 700; opacity: .8; margin-bottom: 3px; text-transform: uppercase; }
+.timeline { position: relative; padding-left: 6px; }
+.timeline-item { display: flex; gap: 14px; padding-bottom: 22px; position: relative; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before { content: ''; position: absolute; left: 5px; top: 16px; bottom: -6px; width: 1px; background: var(--border); }
+.timeline-item:last-child::before { display: none; }
+.timeline-dot { width: 11px; height: 11px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; z-index: 1; }
+.timeline-dot.filled { background: var(--primary-green); }
+.timeline-dot.hollow { background: #fff; border: 2px solid var(--primary-green); }
+.timeline-label { font-size: 13.5px; font-weight: 700; }
+.timeline-time { font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 4px; }
+.timeline-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; word-break: break-word; }
+.big-figure { font-size: 20px; font-weight: 700; color: var(--primary-green-dark); }
+
+/* dashboard bits */
+.two-col { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.cat-bar-card { padding: 20px; }
+.cat-bar-title { font-size: 14px; font-weight: 700; margin: 0 0 16px; }
+.cat-bar-row { margin-bottom: 14px; }
+.cat-bar-row:last-child { margin-bottom: 0; }
+.cat-bar-label { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px; }
+.cat-bar-track { height: 7px; border-radius: var(--radius-pill); background: var(--background); overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: var(--radius-pill); background: var(--primary-green); }
+.monitor-grid { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.mini-stats .card { padding: 14px 16px; }
+.mini-stats .card.wide { grid-column: 1 / -1; }
+.side-stat-value { font-size: 22px; font-weight: 700; }
+.side-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.team-workload-card { padding: 18px; }
+.team-workload-title { font-size: 13.5px; font-weight: 700; margin: 0 0 2px; }
+.team-workload-sub { font-size: 11.5px; color: var(--text-secondary); margin: 0 0 12px; }
+.tw-row { padding: 10px 0; border-top: 1px solid var(--border); }
+.tw-row:first-of-type { border-top: none; }
+.tw-name { font-size: 13px; font-weight: 600; }
+.tw-count { font-size: 12px; color: var(--text-secondary); }
+.tw-link { font-size: 11.5px; font-weight: 600; color: var(--primary-green); }
+
+@media (max-width: 1000px) {
+  .two-col, .detail-grid, .monitor-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 860px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { position: static; width: 100%; height: auto; }
+  .sidebar-nav { flex-direction: row; flex-wrap: wrap; }
+  .topbar-search { display: none; }
+  .page-content { padding: 20px 16px 50px; }
+}
+
+@media (max-width: 560px) {
+  .team-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13V8a1 1 0 0 1 1-1h6a7 7 0 0 1 7 7 1 1 0 0 1-1 1h-1a7 7 0 0 1-6-3.5"/><path d="M8 15c0-4 2-6 6-8"/></svg></div>
+      <div class="brand-text"><div class="brand-name">EcoAware</div><div class="brand-sub">Operations console</div></div>
+    </div>
+    <div class="sidebar-section-label">WORKSPACE</div>
+    <nav class="sidebar-nav">
+      <a href="#/dashboard" class="nav-item" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+      <a href="#/reports" class="nav-item" data-nav="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>All reports</a>
+      <a href="#/assignments" class="nav-item" data-nav="assignments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>Assignments<span class="nav-badge" id="badge-assign" hidden>0</span></a>
+      <a href="#/monitoring" class="nav-item" data-nav="monitoring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Monitoring</a>
+      <a href="#/review" class="nav-item" data-nav="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.2 2.2 4.8-4.9"/></svg>Resolution review<span class="nav-badge" id="badge-review" hidden>0</span></a>
+      <a href="#/history" class="nav-item" data-nav="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Status history</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="avatar-circle" id="sidebar-avatar">--</div>
+      <div class="who"><div class="who-name" id="sidebar-name">--</div><div class="who-role">Campus Coordinator</div></div>
+      <button class="sidebar-signout" id="signout-btn" type="button">Sign out</button>
+    </div>
+  </aside>
+  <div class="main-col">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">Eco Aware / <b id="crumb-label">Management dashboard</b></div>
+      <div class="topbar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="topbar-search-input" type="text" placeholder="Search reports… (press Enter)" />
+      </div>
+    </div>
+    <main class="page-content" id="content"><div class="loading">Loading…</div></main>
+  </div>
+</div>
+<script src="shared/config.js"></script>
+<script>
+/* ===== js/auth.js ===== */
+// ============================================================================
+// AUTH SERVICE
+//
+// Talks to the real backend (POST /api/auth/*). This file is the ONLY place
+// that knows how auth works — every page calls the `Auth` object below, which
+// wraps apiFetch() and stores the returned JWT (see AUTH_STORAGE) so later
+// requests can send it as a Bearer token.
+//
+// The backend is the actual authority: it re-checks the token and the user's
+// role server-side on every request (see Backend/src/middleware/auth.js).
+// ============================================================================
+
+const AUTH_STORAGE = {
+  users: 'ea_users',           // no longer used client-side — accounts live in the backend now
+  session: 'ea_session',       // who is signed in (localStorage) — now includes a real JWT token
+  pending: 'ea_pending_signup' // sign-up awaiting email verification (sessionStorage)
+};
+
+// Where each role lands after a successful sign-in.
+const ROLE_HOME = {
+  reporter: 'index.html',
+  management: 'dashboard.html',
+  staff: 'staff.html',
+};
+
+// API_BASE, CATEGORY_TO_API and API_TO_CATEGORY come from shared/config.js
+// (loaded before this script — see that file to change the backend's address).
+
+const AuthStore = {
+  read(storage, key, fallback) {
+    try {
+      const raw = storage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  },
+  write(storage, key, value) {
+    try {
+      storage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+  remove(storage, key) {
+    try {
+      storage.removeItem(key);
+    } catch (e) {
+      /* storage unavailable — nothing to remove */
+    }
+  },
+};
+
+/**
+ * Thin fetch wrapper: sends JSON, attaches the bearer token from the current
+ * session (unless auth:false), and throws an Error with a readable .message
+ * on any non-2xx response. err.status / err.data carry the raw response.
+ */
+async function apiFetch(path, { method = 'GET', body, auth = true } = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth) {
+    const session = AuthStore.read(localStorage, AUTH_STORAGE.session, null);
+    if (session && session.token) headers.Authorization = `Bearer ${session.token}`;
+  }
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch (e) {
+    throw new Error(`Could not reach the server at ${API_BASE}. Is the backend running?`);
+  }
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch (e) {
+    /* empty or non-JSON body */
+  }
+
+  if (!res.ok) {
+    if (res.status === 401 && auth) {
+      // Token missing/expired/invalid — drop the stale session.
+      AuthStore.remove(localStorage, AUTH_STORAGE.session);
+    }
+    const message = (data && (data.message || data.error)) || `Request failed (${res.status})`;
+    const err = new Error(message);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+
+  return data;
+}
+
+// ---- public API --------------------------------------------------------------
+
+const Auth = {
+  ROLE_HOME,
+
+  getSession() {
+    return AuthStore.read(localStorage, AUTH_STORAGE.session, null);
+  },
+
+  // Call at the very top of any app-page script (before DOMContentLoaded), the
+  // same way home.js does. Sends signed-out visitors to Select Your Role and
+  // returns false so the caller can bail out before touching the DOM.
+  requireSession() {
+    if (this.getSession()) return true;
+    location.replace('role.html');
+    return false;
+  },
+
+  logout() {
+    AuthStore.remove(localStorage, AUTH_STORAGE.session);
+  },
+
+  _startSession(role, name, id, token) {
+    const session = { role, name, id, token, at: Date.now() };
+    AuthStore.write(localStorage, AUTH_STORAGE.session, session);
+    return session;
+  },
+
+  /**
+   * Step 1 of reporter sign-up. Calls POST /auth/signup. On success the
+   * backend has emailed a 6-digit code (or, in local dev with no SMTP set up,
+   * returns it directly as devCode so you can still test the flow).
+   * @returns {Promise<{ok:true, pending:object} | {ok:false, field?:string, error:string}>}
+   */
+  async startSignUp({ email, username, phone, password }) {
+    try {
+      const data = await apiFetch('/auth/signup', {
+        method: 'POST',
+        auth: false,
+        body: { email, username, phone, password },
+      });
+      const pending = {
+        email: (data.email || email).trim().toLowerCase(),
+        username: username.trim(),
+        referenceCode: data.reference || '',
+        devCode: data.devCode || null,
+      };
+      AuthStore.write(sessionStorage, AUTH_STORAGE.pending, pending);
+      return { ok: true, pending };
+    } catch (e) {
+      const errors = e.data && e.data.errors;
+      const field = errors ? Object.keys(errors)[0] : undefined;
+      return { ok: false, field, error: (field && errors[field]) || e.message };
+    }
+  },
+
+  getPending() {
+    return AuthStore.read(sessionStorage, AUTH_STORAGE.pending, null);
+  },
+
+  /** Issues a fresh code via POST /auth/resend-code. */
+  async resendCode() {
+    const pending = this.getPending();
+    if (!pending) return null;
+    try {
+      const data = await apiFetch('/auth/resend-code', {
+        method: 'POST',
+        auth: false,
+        body: { email: pending.email },
+      });
+      pending.devCode = data.devCode || null;
+      pending.referenceCode = data.reference || pending.referenceCode;
+      AuthStore.write(sessionStorage, AUTH_STORAGE.pending, pending);
+      return pending;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  /**
+   * Step 2 of reporter sign-up. Calls POST /auth/verify-email. On success the
+   * account is verified and the backend signs the reporter in immediately.
+   * @returns {Promise<{ok:true, session:object} | {ok:false, reason?:string, error:string}>}
+   */
+  async verifyCode(input) {
+    const pending = this.getPending();
+    if (!pending) {
+      return { ok: false, reason: 'no-pending', error: 'Your sign-up session has expired. Please start again.' };
+    }
+    try {
+      const data = await apiFetch('/auth/verify-email', {
+        method: 'POST',
+        auth: false,
+        body: { email: pending.email, code: input },
+      });
+      AuthStore.remove(sessionStorage, AUTH_STORAGE.pending);
+      return { ok: true, session: this._startSession(data.user.role, data.user.username, data.user.email, data.token) };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  },
+
+  /**
+   * @param {'reporter'|'management'|'staff'} role
+   * @param {string} identifier - email (reporter/management) or staff ID / email (staff)
+   * @returns {Promise<{ok:true, session:object} | {ok:false, error:string, requiresVerification?:boolean}>}
+   */
+  async login(role, identifier, password) {
+    try {
+      const data = await apiFetch('/auth/login', {
+        method: 'POST',
+        auth: false,
+        body: { identifier, password, portal: role },
+      });
+      return { ok: true, session: this._startSession(data.user.role, data.user.username, data.user.email, data.token) };
+    } catch (e) {
+      if (e.data && e.data.requiresVerification) {
+        AuthStore.write(sessionStorage, AUTH_STORAGE.pending, {
+          email: e.data.email,
+          username: '',
+          referenceCode: '',
+        });
+        return { ok: false, error: e.message, requiresVerification: true };
+      }
+      return { ok: false, error: e.message || 'Incorrect email or password. Please try again.' };
+    }
+  },
+};
+</script>
+<script>
+/* ===== js/portal-kit.js  (shared by the Management and Staff portals) ===== */
+// Everything here talks to the real backend (API_BASE + apiFetch come from the Auth script above).
+// All text that comes from the server is escaped with esc() before it is put into the page.
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const enc = encodeURIComponent;
+
+function esc(value) {
+  return String(value === undefined || value === null ? '' : value).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+/* ---------------- formatting ---------------- */
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// "2026-09-22" -> "Sep 22"  (plain date strings are NOT run through Date, so no timezone shift)
+function fmtDay(iso) {
+  if (!iso) return '—';
+  const [, m, d] = String(iso).slice(0, 10).split('-').map(Number);
+  return m ? `${MONTHS[m - 1]} ${d}` : '—';
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return isNaN(d) ? '—' : `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return '—';
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+}
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const secs = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+  if (isNaN(secs)) return '—';
+  if (secs < 60) return 'just now';
+  if (secs < 3600) return `${Math.floor(secs / 60)} min ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)} hr ago`;
+  if (secs < 86400 * 7) return `${Math.floor(secs / 86400)} day${secs >= 86400 * 2 ? 's' : ''} ago`;
+  return fmtDate(iso);
+}
+function fmtMinutes(m) {
+  if (m === null || m === undefined) return '—';
+  if (m < 60) return `${m} min`;
+  if (m < 1440) return `${Math.round((m / 60) * 10) / 10} hrs`;
+  return `${Math.floor(m / 1440)}d ${Math.round((m % 1440) / 60)}h`;
+}
+function todayLocalISO(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function truncate(s, n) {
+  s = String(s || '');
+  return s.length > n ? s.slice(0, n - 1) + '…' : s;
+}
+
+/* ---------------- badges ---------------- */
+
+const STATE_TEXT = { new: 'New', assigned: 'Assigned', in_progress: 'In progress', pending_review: 'Pending review', resolved: 'Resolved' };
+function stateBadge(state, label) {
+  return `<span class="badge badge-${esc(state)}">${esc(label || STATE_TEXT[state] || state)}</span>`;
+}
+function priorityBadge(p) {
+  return `<span class="badge badge-${esc(String(p || '').toLowerCase())}">${esc(String(p || '').toUpperCase())}</span>`;
+}
+function catBadge(c) {
+  const key = { Water: 'water', Waste: 'waste', Energy: 'energy', Safety: 'safety' }[c] || 'other';
+  return `<span class="badge badge-cat-${key}">${esc(c)}</span>`;
+}
+
+const CATEGORY_OPTIONS = [['', 'All categories'], ['Waste', 'Waste'], ['Water', 'Water'], ['Energy', 'Energy'], ['Safety', 'Safety'], ['Other', 'Other']];
+const PRIORITY_LIST = ['Low', 'Medium', 'High', 'Critical'];
+const DEFAULT_DUE_DAYS = { Critical: 1, High: 2, Medium: 5, Low: 7 };
+
+/* ---------------- API (JSON or multipart) ---------------- */
+
+async function api(path, { method = 'GET', body, form, query } = {}) {
+  const session = Auth.getSession();
+  const headers = {};
+  if (session && session.token) headers.Authorization = `Bearer ${session.token}`;
+
+  let payload;
+  if (form) {
+    payload = form; // the browser sets the multipart boundary itself
+  } else if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    payload = JSON.stringify(body);
+  }
+  let qs = '';
+  if (query) {
+    const p = new URLSearchParams();
+    Object.entries(query).forEach(([k, v]) => { if (v !== '' && v !== null && v !== undefined && v !== false) p.set(k, v); });
+    const s = p.toString();
+    qs = s ? `?${s}` : '';
+  }
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}${qs}`, { method, headers, body: payload });
+  } catch (e) {
+    throw new Error(`Could not reach the server at ${API_BASE}. Is the backend running?`);
+  }
+  let data = null;
+  try { data = await res.json(); } catch (e) { /* empty body */ }
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      Auth.logout();
+      location.replace('role.html');
+    }
+    const err = new Error((data && (data.message || data.error)) || `Request failed (${res.status})`);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+/* ---------------- small UI helpers ---------------- */
+
+function toast(message, type) {
+  let wrap = $('#toast-wrap');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = 'toast-wrap';
+    wrap.className = 'toast-wrap';
+    document.body.appendChild(wrap);
+  }
+  const t = document.createElement('div');
+  t.className = 'toast' + (type === 'err' ? ' err' : '');
+  t.textContent = message;
+  wrap.appendChild(t);
+  setTimeout(() => t.remove(), type === 'err' ? 6000 : 3500);
+}
+
+function errorHtml(e, retryId) {
+  const msg = e && e.status === 403 ? "You don't have permission to see this." : (e && e.message) || 'Something went wrong.';
+  return `<div class="banner banner-err"><b>Could not load this page.</b> ${esc(msg)}${retryId ? ` <button class="btn btn-outline btn-sm" id="${retryId}" style="margin-left:8px;">Try again</button>` : ''}</div>`;
+}
+
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+function csvDownload(filename, rows) {
+  const line = (r) => r.map((c) => {
+    const s = String(c === null || c === undefined ? '' : c);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }).join(',');
+  const blob = new Blob([rows.map(line).join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+/* ---------------- filter bars ----------------
+   defs: [{ id, kind: 'search'|'select'|'date'|'check', param, placeholder, title, options:[[value,label]], value, label }]
+*/
+function filterBar(defs) {
+  const html = defs.map((d) => {
+    if (d.kind === 'search') {
+      return `<div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="${d.id}" placeholder="${esc(d.placeholder || 'Search…')}" value="${esc(d.value || '')}"></div>`;
+    }
+    if (d.kind === 'select') {
+      return `<select class="input input-inline" id="${d.id}" aria-label="${esc(d.title || d.param)}">${d.options.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(d.value || '') ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+    }
+    if (d.kind === 'date') {
+      return `<label class="check text-muted">${esc(d.title)} <input type="date" class="input input-inline" id="${d.id}" value="${esc(d.value || '')}"></label>`;
+    }
+    if (d.kind === 'check') {
+      return `<label class="check"><input type="checkbox" id="${d.id}"${d.value ? ' checked' : ''}> ${esc(d.label)}</label>`;
+    }
+    return '';
+  }).join('');
+  return `<div class="filters-row">${html}</div>`;
+}
+function readFilters(defs) {
+  const out = {};
+  defs.forEach((d) => {
+    const el = document.getElementById(d.id);
+    if (!el) return;
+    out[d.param] = d.kind === 'check' ? (el.checked ? 'true' : '') : el.value.trim();
+  });
+  return out;
+}
+function bindFilters(defs, onChange) {
+  const slow = debounce(onChange, 300);
+  defs.forEach((d) => {
+    const el = document.getElementById(d.id);
+    if (!el) return;
+    el.addEventListener(d.kind === 'search' ? 'input' : 'change', d.kind === 'search' ? slow : onChange);
+  });
+}
+
+function pagerHtml(p, noun = 'reports') {
+  if (!p) return '';
+  const from = p.total ? (p.page - 1) * p.limit + 1 : 0;
+  const to = Math.min(p.page * p.limit, p.total);
+  return `<div class="pagination"><span class="pagination-info">${p.total ? `Showing ${from}–${to} of ${p.total} ${noun}` : `No ${noun}`}</span>
+    <div class="pagination-btns">
+      <button class="btn btn-outline btn-sm" data-page="${p.page - 1}"${p.page <= 1 ? ' disabled' : ''}>Previous</button>
+      <button class="btn btn-outline btn-sm" data-page="${p.page + 1}"${p.page >= p.totalPages ? ' disabled' : ''}>Next</button>
+    </div></div>`;
+}
+function bindPager(root, onPage) {
+  $$('[data-page]', root).forEach((b) => b.addEventListener('click', () => { if (!b.disabled) onPage(Number(b.dataset.page)); }));
+}
+
+/* ---------------- report blocks (used on several pages) ---------------- */
+
+function photosBlock(label, list) {
+  const items = (list || []).map((p) => `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="${esc(label)}" loading="lazy"></a>`).join('');
+  return `<div class="photo-label">${esc(label)}</div>` + (items ? `<div class="photo-grid">${items}</div>` : '<div class="no-photo">No photos.</div>');
+}
+
+function mapLink(d) {
+  if (d.latitude === null || d.latitude === undefined || d.longitude === null || d.longitude === undefined) return '';
+  return ` · <a class="inline-link" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=${esc(d.latitude)}&mlon=${esc(d.longitude)}#map=18/${esc(d.latitude)}/${esc(d.longitude)}">View on map</a>`;
+}
+
+// The main card of a report: title, badges, description, photos.
+function reportCard(d) {
+  return `<div class="card detail-card">
+    <div class="detail-head">
+      <div>
+        <h2 class="detail-title">${esc(d.title)}</h2>
+        <p class="detail-meta">#${esc(d.reportCode)} · Reported ${esc(fmtDateTime(d.createdAt))}${d.location ? ' · ' + esc(d.location) : ''}${mapLink(d)}</p>
+      </div>
+      <div>${stateBadge(d.workflowState, d.stateLabel)}</div>
+    </div>
+    <div class="chip-row">${catBadge(d.category)} ${priorityBadge(d.priority)}</div>
+    <p class="detail-body-text">${esc(d.description)}</p>
+    ${photosBlock('Reported photos', d.photos && d.photos.reported)}
+    ${d.photos && d.photos.after && d.photos.after.length ? photosBlock('Completion photos', d.photos.after) : ''}
+  </div>`;
+}
+
+function technicianCard(d) {
+  if (!d.technicianUpdate) return '';
+  const t = d.technicianUpdate;
+  return `<div class="card note-card">
+    <p class="note-label">Technician update</p>
+    <p class="note-text">${esc(t.note)}</p>
+    <div class="note-foot">Submitted by ${esc(t.submittedBy || t.team || 'the response team')}${t.team && t.submittedBy ? ' (' + esc(t.team) + ')' : ''} · ${esc(fmtDateTime(t.submittedAt))}</div>
+  </div>`;
+}
+
+// Key/value info box: who reported it, who owns it, when it is due.
+function infoCard(d) {
+  const rows = [
+    ['Reported by', d.reporter ? d.reporter.username : '—'],
+    ['Department', d.department ? d.department.name : 'Not assigned yet'],
+    ['Assigned to', d.assignedTo ? d.assignedTo.username : '—'],
+    ['Priority', d.priority],
+    ['Due date', d.estimatedCompletion ? fmtDay(d.estimatedCompletion) : '—'],
+  ];
+  return `<div class="card side-panel"><h3>Report details</h3><div class="kv">${rows.map(([k, v]) => `<div class="kv-row"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join('')}</div></div>`;
+}
+
+// events: [{ step, note, at, by }]  (by = username string or { username })
+function timelineHtml(events, { newestFirst = false } = {}) {
+  if (!events || !events.length) return '<div class="empty">No events yet.</div>';
+  const list = newestFirst ? events : events.slice().reverse();
+  return `<div class="timeline">${list.map((e, i) => {
+    const who = e.by && (e.by.username || (typeof e.by === 'string' ? e.by : ''));
+    return `<div class="timeline-item"><span class="timeline-dot ${i === 0 ? 'filled' : 'hollow'}"></span><div>
+      <div class="timeline-label">${esc(e.step)}</div>
+      <div class="timeline-time">${esc(fmtDateTime(e.at))}${who ? ' · ' + esc(who) : ''}</div>
+      ${e.note ? `<div class="timeline-desc">${esc(e.note)}</div>` : ''}
+    </div></div>`;
+  }).join('')}</div>`;
+}
+
+function showFieldErrors(err) {
+  $$('.field-error').forEach((el) => { el.textContent = ''; });
+  const errors = err && err.data && err.data.errors;
+  if (!errors) return false;
+  let any = false;
+  Object.entries(errors).forEach(([k, msg]) => {
+    const el = document.getElementById(`err-${k}`);
+    if (el) { el.textContent = msg; any = true; }
+  });
+  return any;
+}
+
+// A red error under a field disappears as soon as the user edits that field.
+['input', 'change'].forEach((evt) => document.addEventListener(evt, (e) => {
+  const field = e.target.closest && e.target.closest('.field');
+  const msg = field && field.querySelector('.field-error');
+  if (msg) msg.textContent = '';
+}));
+
+/* ---------------- the portal shell: routing, sidebar, sign-out ---------------- */
+
+const Portal = (() => {
+  const routes = [];
+  let navId = 0;
+  let cfg = {};
+
+  const content = () => document.getElementById('content');
+
+  function on(pattern, nav, handler) {
+    const keys = [];
+    const re = new RegExp('^' + pattern.replace(/:([a-zA-Z]+)/g, (_, k) => { keys.push(k); return '([^/]+)'; }) + '$');
+    routes.push({ re, keys, nav, handler });
+  }
+
+  function parseHash() {
+    const raw = location.hash.replace(/^#/, '') || '/';
+    const i = raw.indexOf('?');
+    const path = i === -1 ? raw : raw.slice(0, i);
+    const query = {};
+    new URLSearchParams(i === -1 ? '' : raw.slice(i + 1)).forEach((v, k) => { query[k] = v; });
+    return { path, query };
+  }
+
+  function crumb(label) {
+    const el = document.getElementById('crumb-label');
+    if (el) el.textContent = label;
+    document.title = `Eco Aware — ${label}`;
+  }
+
+  function setBadge(id, n) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = n;
+    el.hidden = !n;
+  }
+
+  async function dispatch() {
+    const { path, query } = parseHash();
+    const mine = ++navId;
+    const ctx = {
+      query,
+      params: {},
+      alive: () => mine === navId,
+      render: (html) => { if (mine === navId) content().innerHTML = html; },
+    };
+    for (const r of routes) {
+      const m = r.re.exec(path);
+      if (!m) continue;
+      r.keys.forEach((k, i) => { ctx.params[k] = decodeURIComponent(m[i + 1]); });
+      $$('.nav-item').forEach((n) => n.classList.toggle('active', n.dataset.nav === r.nav));
+      window.scrollTo(0, 0);
+      content().innerHTML = '<div class="loading">Loading…</div>';
+      try {
+        await r.handler(ctx);
+      } catch (e) {
+        if (!ctx.alive()) return;
+        content().innerHTML = errorHtml(e, 'retry-btn');
+        const b = document.getElementById('retry-btn');
+        if (b) b.addEventListener('click', dispatch);
+      }
+      return;
+    }
+    location.hash = cfg.home;
+  }
+
+  // Returns false if the visitor must be sent elsewhere.
+  function boot(config) {
+    cfg = config;
+    if (!Auth.requireSession()) return false;
+    const session = Auth.getSession();
+    if (session.role !== cfg.role) {
+      location.replace(Auth.ROLE_HOME[session.role] || 'role.html');
+      return false;
+    }
+    const name = session.name || cfg.role;
+    $('#sidebar-name').textContent = name;
+    $('#sidebar-avatar').textContent = name.slice(0, 2).toUpperCase();
+    $('#signout-btn').addEventListener('click', () => { Auth.logout(); location.replace('role.html'); });
+
+    const search = $('#topbar-search-input');
+    if (search) {
+      search.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && search.value.trim()) location.hash = `${cfg.searchRoute}?search=${enc(search.value.trim())}`;
+      });
+    }
+    window.addEventListener('hashchange', dispatch);
+    if (!location.hash || location.hash === '#') location.hash = cfg.home;
+    else dispatch();
+    return true;
+  }
+
+  return { on, boot, crumb, setBadge, refresh: () => dispatch() };
+})();
+</script>
+<script>
+/* ===== js/management.js  (Management portal: /api/manage/*) ===== */
+
+const STATE_OPTIONS = [['', 'All statuses'], ['new', 'New'], ['assigned', 'Assigned'], ['in_progress', 'In progress'], ['pending_review', 'Pending review'], ['resolved', 'Resolved']];
+
+async function refreshBadges() {
+  try {
+    const data = await api('/manage/reports', { query: { limit: 1 } });
+    Portal.setBadge('badge-assign', data.counts.new);
+    Portal.setBadge('badge-review', data.counts.pending_review);
+  } catch (e) { /* badges are optional */ }
+}
+
+// One row of a report table (used by several screens)
+function reportRow(r, { cols }) {
+  const cell = {
+    report: `<td><div class="cell-primary">${esc(r.title)}</div><div class="cell-sub">#${esc(r.reportCode)} · ${esc(r.location || 'No location')} · <a class="inline-link" href="#/report/${enc(r.reportCode)}">View report →</a></div></td>`,
+    category: `<td>${catBadge(r.category)}</td>`,
+    priority: `<td>${priorityBadge(r.priority)}</td>`,
+    reported: `<td class="nowrap">${esc(fmtDateTime(r.createdAt))}</td>`,
+    status: `<td>${stateBadge(r.workflowState, r.stateLabel)}</td>`,
+    team: `<td>${r.department ? esc(r.department.name) : '<span class="text-muted">—</span>'}${r.assignedTo ? `<div class="cell-sub">${esc(r.assignedTo.username)}</div>` : ''}</td>`,
+    due: `<td class="nowrap${r.isOverdue ? ' text-danger' : ''}">${esc(fmtDay(r.dueDate))}${r.isOverdue ? ' · overdue' : ''}</td>`,
+    assign: `<td class="right"><a class="btn btn-primary btn-sm" href="#/assign/${enc(r.reportCode)}">${r.workflowState === 'new' ? 'Review &amp; assign' : 'Reassign'}</a></td>`,
+    review: `<td class="right"><a class="btn btn-primary btn-sm" href="#/review/${enc(r.reportCode)}">Review</a></td>`,
+    history: `<td class="right"><a class="btn btn-outline btn-sm" href="#/history/${enc(r.reportCode)}">View history →</a></td>`,
+  };
+  return `<tr class="row-link">${cols.map((c) => cell[c]).join('')}</tr>`;
+}
+
+const COL_HEAD = {
+  report: 'REPORT', category: 'CATEGORY', priority: 'PRIORITY', reported: 'REPORTED', status: 'STATUS',
+  team: 'TEAM', due: 'DUE', assign: '', review: '', history: '',
+};
+
+function reportTable(reports, cols, emptyText) {
+  if (!reports.length) return `<div class="card"><div class="empty">${esc(emptyText || 'No reports found.')}</div></div>`;
+  return `<div class="card table-scroll" style="padding:6px 8px;"><table>
+    <thead><tr>${cols.map((c) => `<th${['assign', 'review', 'history'].includes(c) ? ' class="right"' : ''}>${COL_HEAD[c]}</th>`).join('')}</tr></thead>
+    <tbody>${reports.map((r) => reportRow(r, { cols })).join('')}</tbody></table></div>`;
+}
+
+function pageHead(title, desc, actions) {
+  return `<div class="page-head-row"><div><h1 class="page-title">${esc(title)}</h1><p class="page-desc">${esc(desc)}</p></div>${actions ? `<div>${actions}</div>` : ''}</div>`;
+}
+
+// Generic "filters + table + pager" screen. Only the table area reloads when a filter changes.
+function listScreen(ctx, { defs, path, cols, noun, empty, extraQuery, onData, limit }) {
+  let page = 1;
+  const load = async () => {
+    const area = $('#list-area');
+    area.innerHTML = '<div class="loading">Loading…</div>';
+    try {
+      const data = await api(path, { query: { ...readFilters(defs), ...(extraQuery ? extraQuery() : {}), page, limit: limit || 15 } });
+      if (!ctx.alive()) return;
+      if (onData) onData(data);
+      area.innerHTML = reportTable(data.reports, cols, empty) + pagerHtml(data.pagination, noun);
+      bindPager(area, (p) => { page = p; load(); });
+    } catch (e) {
+      if (ctx.alive()) area.innerHTML = errorHtml(e);
+    }
+  };
+  bindFilters(defs, () => { page = 1; load(); });
+  return load();
+}
+
+/* =============== Dashboard =============== */
+Portal.on('/dashboard', 'dashboard', async (ctx) => {
+  Portal.crumb('Management dashboard');
+  const data = await api('/manage/dashboard');
+  if (!ctx.alive()) return;
+  const s = data.stats;
+  const tile = (label, value, foot) => `<div class="card stat-card"><div class="stat-label">${esc(label)}</div><div class="stat-value">${esc(value)}</div><div class="stat-foot">${esc(foot)}</div></div>`;
+
+  ctx.render(`
+    ${pageHead('Management dashboard', 'Campus sustainability operations at a glance', '<button class="btn btn-primary" id="export-summary">Export summary</button>')}
+    <div class="stat-grid">
+      ${tile('OPEN REPORTS', s.openReports, `+${s.newThisWeek} this week`)}
+      ${tile('ASSIGNED', s.assigned, `${s.dueToday} due today`)}
+      ${tile('IN PROGRESS', s.inProgress, s.medianResolutionDays === null ? 'No resolved reports yet' : `Median ${s.medianResolutionDays} days`)}
+      ${tile('RESOLUTION RATE', `${s.resolutionRate}%`, 'Last 30 days')}
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="section-head-row"><h3 class="section-title">Recent reports</h3><a class="link-arrow" href="#/reports">View all reports →</a></div>
+        ${reportTable(data.recent, ['report', 'category', 'reported', 'status'], 'No reports have been submitted yet.')}
+      </div>
+      <div class="card cat-bar-card">
+        <h3 class="cat-bar-title">Reports by category</h3>
+        ${data.byCategory.map((c) => `<div class="cat-bar-row"><div class="cat-bar-label"><span>${esc(c.category)}</span><span style="font-weight:700;">${c.percent}%</span></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${c.percent}%;"></div></div></div>`).join('')}
+      </div>
+    </div>`);
+
+  $('#export-summary').addEventListener('click', () => {
+    csvDownload('eco-aware-summary.csv', [
+      ['Metric', 'Value'],
+      ['Open reports', s.openReports], ['New this week', s.newThisWeek], ['Assigned', s.assigned], ['Due today', s.dueToday],
+      ['In progress', s.inProgress], ['Resolution rate (30 days, %)', s.resolutionRate],
+      ['Median resolution (days)', s.medianResolutionDays === null ? '' : s.medianResolutionDays],
+      [], ['Category', 'Reports', 'Percent'],
+      ...data.byCategory.map((c) => [c.category, c.count, c.percent]),
+    ]);
+  });
+});
+
+/* =============== All reports =============== */
+Portal.on('/reports', 'reports', async (ctx) => {
+  Portal.crumb('All reports');
+  const defs = [
+    { id: 'f-search', kind: 'search', param: 'search', placeholder: 'Search report ID, title, or location…', value: ctx.query.search || '' },
+    { id: 'f-status', kind: 'select', param: 'status', title: 'Status', options: STATE_OPTIONS, value: ctx.query.status || '' },
+    { id: 'f-category', kind: 'select', param: 'category', title: 'Category', options: CATEGORY_OPTIONS },
+    { id: 'f-from', kind: 'date', param: 'from', title: 'From' },
+    { id: 'f-to', kind: 'date', param: 'to', title: 'To' },
+  ];
+  ctx.render(`${pageHead('All reports', 'Review, filter, and route environmental issues', '<a class="btn btn-primary" href="report.html">Create report</a>')}${filterBar(defs)}<div id="list-area"></div>`);
+  await listScreen(ctx, { defs, path: '/manage/reports', cols: ['report', 'category', 'priority', 'reported', 'status'], noun: 'reports', empty: 'No reports match these filters.' });
+});
+
+/* =============== Report detail =============== */
+Portal.on('/report/:code', 'reports', async (ctx) => {
+  const { report: d } = await api(`/reports/${enc(ctx.params.code)}`);
+  if (!ctx.alive()) return;
+  Portal.crumb(`Report #${d.reportCode}`);
+  const actions = [];
+  if (['new', 'assigned'].includes(d.workflowState)) actions.push(`<a class="btn btn-primary" href="#/assign/${enc(d.reportCode)}">${d.workflowState === 'new' ? 'Assign report' : 'Reassign'}</a>`);
+  if (d.workflowState === 'pending_review') actions.push(`<a class="btn btn-primary" href="#/review/${enc(d.reportCode)}">Review resolution</a>`);
+  actions.push(`<a class="btn btn-outline" href="#/history/${enc(d.reportCode)}">Status history</a>`);
+  ctx.render(`
+    ${pageHead('Report details', `#${d.reportCode}`, `<div class="btn-row" style="margin:0;">${actions.join('')}</div>`)}
+    <div class="detail-grid">
+      <div>
+        ${reportCard(d)}
+        ${technicianCard(d)}
+        ${d.reviewNote ? `<div class="card note-card"><p class="note-label">Last reviewer note</p><p class="note-text">${esc(d.reviewNote)}</p></div>` : ''}
+      </div>
+      <div>${infoCard(d)}<div class="card side-panel" style="margin-top:14px;"><h3>Timeline</h3>${timelineHtml(d.timeline)}</div></div>
+    </div>`);
+});
+
+/* =============== Assignments (list) =============== */
+Portal.on('/assignments', 'assignments', async (ctx) => {
+  Portal.crumb('Assignments');
+  let tab = ctx.query.tab === 'assigned' ? 'assigned' : 'new';
+  let page = 1;
+  ctx.render(`${pageHead('Assignments', 'Review new reports and send them to the right team')}<div id="list-area"></div>`);
+  const load = async () => {
+    const area = $('#list-area');
+    try {
+      const data = await api('/manage/reports', { query: { status: tab, page, limit: 15 } });
+      if (!ctx.alive()) return;
+      Portal.setBadge('badge-assign', data.counts.new);
+      Portal.setBadge('badge-review', data.counts.pending_review);
+      const tabs = `<div class="tabs-row">
+        <div class="tab-item${tab === 'new' ? ' active' : ''}" data-tab="new">Needs assignment<span class="tab-count">${data.counts.new}</span></div>
+        <div class="tab-item${tab === 'assigned' ? ' active' : ''}" data-tab="assigned">Assigned, not started<span class="tab-count">${data.counts.assigned}</span></div></div>`;
+      const cols = tab === 'new' ? ['report', 'category', 'priority', 'reported', 'assign'] : ['report', 'category', 'priority', 'team', 'due', 'assign'];
+      area.innerHTML = tabs + reportTable(data.reports, cols, tab === 'new' ? 'Nothing is waiting for assignment.' : 'No assigned reports are waiting to start.') + pagerHtml(data.pagination);
+      $$('[data-tab]', area).forEach((t) => t.addEventListener('click', () => { tab = t.dataset.tab; page = 1; load(); }));
+      bindPager(area, (p) => { page = p; load(); });
+    } catch (e) { if (ctx.alive()) area.innerHTML = errorHtml(e); }
+  };
+  await load();
+});
+
+/* =============== Review and assign one report =============== */
+Portal.on('/assign/:code', 'assignments', async (ctx) => {
+  const code = ctx.params.code;
+  const [det, depts, staffRes] = await Promise.all([
+    api(`/reports/${enc(code)}`),
+    api('/departments'),
+    api('/users', { query: { role: 'staff' } }),
+  ]);
+  if (!ctx.alive()) return;
+  const d = det.report;
+  Portal.crumb(`Assign #${d.reportCode}`);
+
+  const canAssign = ['new', 'assigned'].includes(d.workflowState);
+  const staff = staffRes.users || [];
+  const dueDefault = d.estimatedCompletion || todayLocalISO(DEFAULT_DUE_DAYS[d.priority] || 3);
+
+  const side = canAssign ? `
+    <div class="card side-panel">
+      <div class="field"><label class="field-label" for="a-dept">1 · Select department</label>
+        <select class="input" id="a-dept">${depts.departments.map((x) => `<option value="${x.id}"${d.department && d.department.id === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select>
+        <div class="field-error" id="err-departmentId"></div></div>
+      <div class="field"><label class="field-label" for="a-staff">Staff member (optional)</label>
+        <select class="input" id="a-staff"></select>
+        <div class="field-error" id="err-staffId"></div>
+        <div class="hint">Leave it on "Anyone" and a team member can take the report themselves.</div></div>
+      <div class="field"><label class="field-label" for="a-due">2 · Due date</label>
+        <input class="input" type="date" id="a-due" min="${todayLocalISO()}" value="${esc(dueDefault)}">
+        <div class="field-error" id="err-dueDate"></div></div>
+      <div class="field"><label class="field-label" for="a-prio">Priority</label>
+        <select class="input" id="a-prio">${PRIORITY_LIST.map((p) => `<option${p === d.priority ? ' selected' : ''}>${p}</option>`).join('')}</select>
+        <div class="field-error" id="err-priority"></div></div>
+      <div class="field"><label class="field-label" for="a-note">Note (optional)</label>
+        <textarea class="input" id="a-note" maxlength="500" placeholder="Anything the team should know…"></textarea>
+        <div class="field-error" id="err-note"></div></div>
+      <button class="btn btn-primary btn-block" id="assign-btn">${d.workflowState === 'new' ? 'Assign' : 'Reassign'} report #${esc(d.reportCode)} →</button>
+    </div>` : `<div class="card side-panel"><div class="banner banner-warn"><b>Can't be assigned now.</b> This report is "${esc(d.stateLabel)}". Only reports that have not been started can be assigned.</div><a class="btn btn-outline" href="#/report/${enc(d.reportCode)}">Back to report</a></div>`;
+
+  ctx.render(`${pageHead(`${d.workflowState === 'new' ? 'Review and assign' : 'Reassign'} report #${d.reportCode}`, 'Verify the information and assign the right response team')}
+    <div class="detail-grid"><div>${reportCard(d)}</div><div>${side}</div></div>`);
+
+  if (!canAssign) return;
+
+  const deptEl = $('#a-dept'), staffEl = $('#a-staff');
+  const fillStaff = () => {
+    const list = staff.filter((s) => !s.department_id || String(s.department_id) === deptEl.value);
+    staffEl.innerHTML = '<option value="">Anyone in the department</option>' + list.map((s) => `<option value="${esc(s.id)}"${d.assignedTo && d.assignedTo.id === s.id ? ' selected' : ''}>${esc(s.username)}</option>`).join('');
+  };
+  fillStaff();
+  deptEl.addEventListener('change', fillStaff);
+  // Until the manager picks a date themselves, the suggested due date follows the priority.
+  let dueTouched = Boolean(d.estimatedCompletion);
+  $('#a-due').addEventListener('change', () => { dueTouched = true; });
+  $('#a-prio').addEventListener('change', () => { if (!dueTouched) $('#a-due').value = todayLocalISO(DEFAULT_DUE_DAYS[$('#a-prio').value] || 3); });
+
+  const btn = $('#assign-btn');
+  btn.addEventListener('click', async () => {
+    showFieldErrors(null);
+    const body = { departmentId: Number(deptEl.value), dueDate: $('#a-due').value, priority: $('#a-prio').value };
+    if (staffEl.value) body.staffId = staffEl.value;
+    const note = $('#a-note').value.trim();
+    if (note) body.note = note;
+    btn.disabled = true;
+    try {
+      await api(`/manage/reports/${enc(d.reportCode)}/assign`, { method: 'POST', body });
+      toast(`Report #${d.reportCode} assigned`);
+      refreshBadges();
+      location.hash = `#/report/${enc(d.reportCode)}`;
+    } catch (e) {
+      if (!showFieldErrors(e)) toast(e.message, 'err');
+      else toast('Please fix the highlighted fields', 'err');
+      btn.disabled = false;
+    }
+  });
+});
+
+/* =============== Monitoring =============== */
+Portal.on('/monitoring', 'monitoring', async (ctx) => {
+  Portal.crumb('Monitoring');
+  const mon = await api('/manage/monitor');
+  if (!ctx.alive()) return;
+  const teamOptions = [['', 'All teams'], ...mon.teamWorkload.map((t) => [String(t.departmentId), t.name])];
+  const defs = [
+    { id: 'f-search', kind: 'search', param: 'search', placeholder: 'Search report, category, or location…', value: ctx.query.search || '' },
+    { id: 'f-category', kind: 'select', param: 'category', title: 'Category', options: CATEGORY_OPTIONS },
+    { id: 'f-status', kind: 'select', param: 'status', title: 'Status', options: STATE_OPTIONS },
+    { id: 'f-team', kind: 'select', param: 'departmentId', title: 'Team', options: teamOptions, value: ctx.query.departmentId || '' },
+    { id: 'f-overdue', kind: 'check', param: 'overdue', label: 'Overdue only' },
+  ];
+  const m = mon.summary;
+  const side = `
+    <div class="mini-stats">
+      <div class="card"><div class="side-stat-value">${m.assigned}</div><div class="side-stat-label">Assigned</div></div>
+      <div class="card"><div class="side-stat-value">${m.dueToday}</div><div class="side-stat-label">Due today</div></div>
+      <div class="card"><div class="side-stat-value">${m.overdue}</div><div class="side-stat-label">Overdue</div></div>
+      <div class="card"><div class="side-stat-value">${m.awaitingReview}</div><div class="side-stat-label">Awaiting review</div></div>
+    </div>
+    <div class="card team-workload-card">
+      <h3 class="team-workload-title">Team workload</h3><p class="team-workload-sub">Active reports per team</p>
+      ${mon.teamWorkload.map((t) => `<div class="tw-row"><div class="tw-name">${esc(t.name)} · ${t.active} active</div><a class="tw-link" href="#/monitoring?departmentId=${t.departmentId}">View queue →</a></div>`).join('') || '<div class="empty">No teams yet.</div>'}
+    </div>`;
+  ctx.render(`${pageHead('Monitor assigned reports', 'Track ownership, deadlines, and response progress', '<button class="btn btn-outline" id="export-table">Export</button>')}
+    ${filterBar(defs)}
+    <div class="monitor-grid"><div id="list-area"></div><div>${side}</div></div>`);
+
+  let last = [];
+  $('#export-table').addEventListener('click', () => {
+    csvDownload('eco-aware-monitoring.csv', [
+      ['Report', 'Title', 'Category', 'Team', 'Assigned to', 'Priority', 'Due', 'Reported', 'Status'],
+      ...last.map((r) => [r.reportCode, r.title, r.category, r.department ? r.department.name : '', r.assignedTo ? r.assignedTo.username : '', r.priority, r.dueDate || '', r.createdAt, r.stateLabel]),
+    ]);
+  });
+  await listScreen(ctx, { defs, path: '/manage/reports', cols: ['report', 'category', 'team', 'due', 'status'], noun: 'reports', empty: 'No reports match these filters.', onData: (data) => { last = data.reports; } });
+});
+
+/* =============== Resolution review (list) =============== */
+Portal.on('/review', 'review', async (ctx) => {
+  Portal.crumb('Resolution review');
+  ctx.render(`${pageHead('Resolution review', 'Fixes the response teams have finished, waiting for your approval')}<div id="list-area"></div>`);
+  const defs = [];
+  await listScreen(ctx, {
+    defs, path: '/manage/reports', cols: ['report', 'category', 'team', 'reported', 'review'], noun: 'reports',
+    empty: 'Nothing is waiting for review.', extraQuery: () => ({ status: 'pending_review' }),
+    onData: (data) => { Portal.setBadge('badge-review', data.counts.pending_review); Portal.setBadge('badge-assign', data.counts.new); },
+  });
+});
+
+/* =============== Review one resolution =============== */
+Portal.on('/review/:code', 'review', async (ctx) => {
+  const { report: d } = await api(`/reports/${enc(ctx.params.code)}`);
+  if (!ctx.alive()) return;
+  Portal.crumb(`Review #${d.reportCode}`);
+  const waiting = d.workflowState === 'pending_review';
+
+  const side = waiting ? `
+    <div class="card side-panel">
+      <div class="field-label" style="margin-bottom:8px;">Resolution review</div>
+      <div class="evidence-chip ${d.evidenceComplete ? 'evidence-ok' : 'evidence-no'}">${d.evidenceComplete ? 'Evidence complete' : 'Evidence incomplete — no completion photo or note'}</div>
+      <div class="field"><label class="field-label" for="r-note">Reviewer note</label>
+        <textarea class="input" id="r-note" maxlength="500" placeholder="Add an optional note… (required if you ask for more information)"></textarea>
+        <div class="field-error" id="err-note"></div></div>
+      <div class="btn-row" style="flex-direction:column;">
+        <button class="btn btn-primary btn-block" id="approve-btn">Approve resolution</button>
+        <button class="btn btn-outline btn-block" id="info-btn">Request more information</button>
+      </div>
+    </div>` : `<div class="card side-panel"><div class="banner banner-info"><b>Nothing to review.</b> This report is "${esc(d.stateLabel)}", not waiting for review.</div><a class="btn btn-outline" href="#/report/${enc(d.reportCode)}">Back to report</a></div>`;
+
+  ctx.render(`${pageHead(`Review resolution · Report #${d.reportCode}`, 'Validate the evidence and close the report')}
+    <div class="detail-grid"><div>${reportCard(d)}${technicianCard(d)}</div><div>${side}</div></div>`);
+  if (!waiting) return;
+
+  const decide = async (decision, btn) => {
+    showFieldErrors(null);
+    const note = $('#r-note').value.trim();
+    if (decision === 'request_info' && note.length < 5) { $('#err-note').textContent = 'Tell the team what information is missing (at least 5 characters)'; return; }
+    if (decision === 'approve' && !confirm('Approve this resolution and mark the report as Resolved?')) return;
+    $$('button', btn.parentNode).forEach((b) => { b.disabled = true; });
+    try {
+      const body = { decision };
+      if (note) body.note = note;
+      const res = await api(`/manage/reports/${enc(d.reportCode)}/review`, { method: 'POST', body });
+      toast(res.message);
+      refreshBadges();
+      location.hash = decision === 'approve' ? `#/history/${enc(d.reportCode)}` : '#/review';
+    } catch (e) {
+      if (!showFieldErrors(e)) toast(e.message, 'err');
+      $$('button', btn.parentNode).forEach((b) => { b.disabled = false; });
+    }
+  };
+  $('#approve-btn').addEventListener('click', (ev) => decide('approve', ev.currentTarget));
+  $('#info-btn').addEventListener('click', (ev) => decide('request_info', ev.currentTarget));
+});
+
+/* =============== Status history (list) =============== */
+Portal.on('/history', 'history', async (ctx) => {
+  Portal.crumb('Status history');
+  const defs = [
+    { id: 'f-search', kind: 'search', param: 'search', placeholder: 'Search by report ID, title, or location…', value: ctx.query.search || '' },
+    { id: 'f-status', kind: 'select', param: 'status', title: 'Status', options: STATE_OPTIONS },
+  ];
+  ctx.render(`${pageHead('Status history', 'Pick a report to see its complete audit trail')}${filterBar(defs)}<div id="list-area"></div>`);
+  await listScreen(ctx, { defs, path: '/manage/reports', cols: ['report', 'category', 'reported', 'status', 'history'], noun: 'reports', empty: 'No reports found.' });
+});
+
+/* =============== Status history (one report) =============== */
+Portal.on('/history/:code', 'history', async (ctx) => {
+  const h = await api(`/manage/reports/${enc(ctx.params.code)}/history`);
+  if (!ctx.alive()) return;
+  const r = h.report;
+  Portal.crumb(`History #${r.reportCode}`);
+  const rt = h.resolutionTime;
+  ctx.render(`${pageHead(`Status history · Report #${r.reportCode}`, `Complete audit trail for ${r.title}`, `<a class="btn btn-primary" href="#/report/${enc(r.reportCode)}">Back to report</a>`)}
+    <div class="detail-grid">
+      <div class="card detail-card">
+        <div class="status-banner"><span class="sb-label">Current status</span>${esc(r.stateLabel)}</div>
+        ${timelineHtml(h.events, { newestFirst: true })}
+      </div>
+      <div class="card side-panel">
+        <div class="field-label">Report</div><div class="big-figure" style="margin:4px 0 8px;">#${esc(r.reportCode)}</div>
+        <div style="font-weight:700;font-size:13.5px;">${esc(r.title)}</div>
+        <div class="hint" style="margin-bottom:16px;">${esc(r.location || 'No location given')}</div>
+        <div class="field-label">Resolution time</div>
+        <div class="big-figure" style="margin-top:4px;">${rt ? `${rt.days} day${rt.days === 1 ? '' : 's'}, ${rt.hours} hour${rt.hours === 1 ? '' : 's'}` : 'Not resolved yet'}</div>
+      </div>
+    </div>`);
+});
+
+/* =============== start =============== */
+if (Portal.boot({ role: 'management', home: '#/dashboard', searchRoute: '#/reports' })) refreshBadges();
+</script>
+</body>
+</html>
