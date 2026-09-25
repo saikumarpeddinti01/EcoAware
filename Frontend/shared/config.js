@@ -2,7 +2,7 @@
 // One source of truth: change the API's location or a category mapping here, once,
 // instead of hunting through every HTML page for a copy of the same constant.
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://ecoaware-ko5a.onrender.com/api';
 
 // Backend categories (Waste/Water/Energy/Safety/Other) <-> the shorter names used
 // in a couple of older UI spots (waste/water/energy/general).
